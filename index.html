@@ -69,6 +69,17 @@
       gap: 1.5rem;
     }
 
+    .catalog-section-title {
+      grid-column: 1 / -1;
+      margin: 1.5rem 0 -.9rem;
+      font-size: 1.45rem;
+      letter-spacing: -.3px;
+    }
+
+    .catalog-section-title:first-child { margin-top: 0; }
+    .catalog-section-subtitle { grid-column: 1 / -1; margin: 0 0 -.9rem; color: var(--muted); }
+    .product-meta { min-height: 1.5rem; margin: -.15rem 0 1rem; color: var(--muted); font-size: .93rem; }
+
     .status {
       grid-column: 1 / -1;
       margin: 1rem 0;
@@ -332,7 +343,7 @@
 
     // Acepta valores de Sheets como 1350, 1.350, 1.350,50 o 1,350.50.
     function toNumber(value) {
-      const raw = normalizeCell(value).replace(/\s/g, '');
+      const raw = normalizeCell(value).replace(/\s/g, '').replace(/[^\d,.-]/g, '');
       if (!raw) return Number.NaN;
 
       const comma = raw.lastIndexOf(',');
@@ -345,10 +356,12 @@
           : raw.replace(/,/g, '');
       } else if (comma !== -1) {
         const decimals = raw.length - comma - 1;
-        normalized = decimals === 3 && raw.indexOf(',') === comma ? raw.replace(',', '') : raw.replace(',', '.');
+        const commas = (raw.match(/,/g) || []).length;
+        normalized = decimals === 3 || commas > 1 ? raw.replace(/,/g, '') : raw.replace(',', '.');
       } else if (dot !== -1) {
         const decimals = raw.length - dot - 1;
-        normalized = decimals === 3 && raw.indexOf('.') === dot ? raw.replace('.', '') : raw;
+        const dots = (raw.match(/\./g) || []).length;
+        normalized = decimals === 3 || dots > 1 ? raw.replace(/\./g, '') : raw;
       }
       return Number(normalized);
     }
@@ -361,40 +374,119 @@
       catalog.append(status);
     }
 
-    function getConfiguration(configRow) {
-      if (!Array.isArray(configRow)) throw new Error('No se encontró la fila 0 de configuración.');
-
-      const dolar = toNumber(configRow[5]);
-      if (!Number.isFinite(dolar) || dolar <= 0) {
-        throw new Error('La tasa de dólar de la fila 0 (columna F) no es válida.');
-      }
-
-      const recargos = {};
-      INSTALLMENTS.forEach((term, index) => {
-        const value = toNumber(configRow[index + 6]);
-        if (!Number.isFinite(value) || value < 0) {
-          throw new Error(`El recargo de ${term} cuotas de la fila 0 no es válido.`);
-        }
-        recargos[term] = value;
-      });
-
-      return { dolar, recargos, whatsapp: WHATSAPP_NUMBER };
+    function normalizeHeader(value) {
+      return normalizeCell(value)
+        .normalize('NFD')
+        .replace(/[\u0300-\u036f]/g, '')
+        .toUpperCase();
     }
 
-    function getAvailableProducts(rows) {
-      return rows.slice(1).map((row) => {
-        const modelo = normalizeCell(row[0]);
-        const capacidad = normalizeCell(row[1]);
-        const precioUSD = toNumber(row[2]);
-        const stock = toNumber(row[3]);
-        const imagen = normalizeCell(row[4]);
+    function rowIsEmpty(row) {
+      return !row.some((cell) => normalizeCell(cell));
+    }
 
-        return { modelo, capacidad, precioUSD, stock, imagen };
-      }).filter((product) => (
-        product.modelo && product.capacidad &&
-        Number.isFinite(product.precioUSD) && product.precioUSD > 0 &&
-        Number.isFinite(product.stock) && product.stock > 0
-      ));
+    function findDollarRate(rows) {
+      for (const row of rows) {
+        for (let index = 0; index < row.length; index += 1) {
+          if (normalizeHeader(row[index]).includes('COTIZACION DOLAR')) {
+            const value = toNumber(row[index + 1]);
+            if (Number.isFinite(value) && value > 0) return value;
+          }
+        }
+      }
+      return 0;
+    }
+
+    function findSectionInfo(rows, headerIndex) {
+      let title = 'Equipos disponibles';
+      let warranty = '';
+      for (let index = headerIndex - 1; index >= 0 && index >= headerIndex - 5; index -= 1) {
+        const text = rowToText(rows[index]);
+        const header = normalizeHeader(text);
+        if (!warranty && (header.includes('GARANTIA') || header.includes('DIAS'))) warranty = text;
+        if (header.includes('IPHONES')) {
+          title = text.replace(//g, '').trim();
+          break;
+        }
+      }
+      return { title, warranty };
+    }
+
+    function rowToText(row) {
+      return row.map(normalizeCell).filter(Boolean).join(' ');
+    }
+
+    function findColumn(headers, text) {
+      return headers.findIndex((header) => header.includes(text));
+    }
+
+    function findInstallmentColumn(headers, term) {
+      return headers.findIndex((header) => header.includes(`${term} CUOTAS`));
+    }
+
+    function formatCapacity(value) {
+      const capacity = normalizeCell(value);
+      return /(?:GB|TB)$/i.test(capacity) ? capacity : `${capacity} GB`;
+    }
+
+    // Lee el formato real de la hoja: secciones, encabezados y valores ya calculados.
+    // También respeta Stock si en el futuro se agrega una columna con ese nombre.
+    function getAvailableProducts(rows) {
+      const products = [];
+      const dollarRate = findDollarRate(rows);
+      config = { dolar: dollarRate, recargos: {}, whatsapp: WHATSAPP_NUMBER };
+
+      for (let headerRow = 0; headerRow < rows.length; headerRow += 1) {
+        const headers = rows[headerRow].map(normalizeHeader);
+        const modelIndex = findColumn(headers, 'MODELO');
+        const usdIndex = headers.findIndex((header) => header === 'USD' || header.startsWith('USD '));
+        if (modelIndex === -1 || usdIndex === -1) continue;
+
+        const capacityIndex = findColumn(headers, 'GB');
+        const colorIndex = findColumn(headers, 'COLOR');
+        const batteryIndex = findColumn(headers, 'BATERIA');
+        const detailsIndex = findColumn(headers, 'DETALLES');
+        const cashIndex = findColumn(headers, 'PESOS');
+        const transferIndex = findColumn(headers, 'TRANSFERENCIA');
+        const stockIndex = findColumn(headers, 'STOCK');
+        const imageIndex = findColumn(headers, 'IMAGEN');
+        const section = findSectionInfo(rows, headerRow);
+
+        for (let rowIndex = headerRow + 1; rowIndex < rows.length; rowIndex += 1) {
+          const row = rows[rowIndex];
+          if (rowIsEmpty(row)) break;
+          const possibleHeaders = row.map(normalizeHeader);
+          if (findColumn(possibleHeaders, 'MODELO') !== -1 && findColumn(possibleHeaders, 'USD') !== -1) break;
+
+          const modelo = normalizeCell(row[modelIndex]);
+          const precioUSD = toNumber(row[usdIndex]);
+          const stock = stockIndex === -1 ? null : toNumber(row[stockIndex]);
+          if (!modelo || !Number.isFinite(precioUSD) || precioUSD <= 0 || (stock !== null && stock <= 0)) continue;
+
+          const installments = {};
+          INSTALLMENTS.forEach((term) => {
+            const column = findInstallmentColumn(headers, term);
+            const value = column === -1 ? Number.NaN : toNumber(row[column]);
+            if (Number.isFinite(value) && value > 0) installments[term] = value;
+          });
+
+          products.push({
+            section: section.title,
+            warranty: section.warranty,
+            modelo,
+            capacidad: capacityIndex === -1 ? '' : formatCapacity(row[capacityIndex]),
+            color: colorIndex === -1 ? '' : normalizeCell(row[colorIndex]),
+            bateria: batteryIndex === -1 ? '' : normalizeCell(row[batteryIndex]),
+            detalles: detailsIndex === -1 ? '' : normalizeCell(row[detailsIndex]),
+            precioUSD,
+            precioEfectivo: cashIndex === -1 ? Number.NaN : toNumber(row[cashIndex]),
+            precioTransferencia: transferIndex === -1 ? Number.NaN : toNumber(row[transferIndex]),
+            installments,
+            imagen: imageIndex === -1 ? '' : normalizeCell(row[imageIndex])
+          });
+        }
+      }
+      return products;
     }
 
     function appendTextElement(parent, tagName, className, text) {
@@ -406,8 +498,10 @@
     }
 
     function createProductCard(product) {
-      const fullName = `${product.modelo} ${product.capacidad}`;
-      const priceARS = product.precioUSD * config.dolar;
+      const fullName = [product.modelo, product.capacidad].filter(Boolean).join(' · ');
+      const priceCash = Number.isFinite(product.precioEfectivo)
+        ? product.precioEfectivo
+        : product.precioUSD * config.dolar;
       const card = document.createElement('article');
       card.className = 'card';
 
@@ -425,18 +519,23 @@
       const body = document.createElement('div');
       body.className = 'card-body';
       appendTextElement(body, 'h2', 'card-title', fullName);
+      const productMeta = [product.color && `Color: ${product.color}`, product.bateria && `Batería: ${product.bateria}`, product.detalles && `Detalle: ${product.detalles}`]
+        .filter(Boolean).join(' · ');
+      if (productMeta) appendTextElement(body, 'p', 'product-meta', productMeta);
       appendTextElement(body, 'div', 'price-usd', formatUSD(product.precioUSD));
-      appendTextElement(body, 'div', 'price-ars', `Efectivo / transferencia: ${formatARS(priceARS)}`);
+      const prices = [`Efectivo: ${formatARS(priceCash)}`];
+      if (Number.isFinite(product.precioTransferencia)) prices.push(`Transferencia: ${formatARS(product.precioTransferencia)}`);
+      appendTextElement(body, 'div', 'price-ars', prices.join(' · '));
 
       const installmentsBox = document.createElement('section');
       installmentsBox.className = 'installments';
       appendTextElement(installmentsBox, 'h4', '', 'Cuotas fijas en pesos');
       INSTALLMENTS.forEach((term) => {
-        const financedTotal = priceARS * (1 + config.recargos[term] / 100);
+        const installmentValue = product.installments[term] || (priceCash * (1 + (config.recargos[term] || 0) / 100) / term);
         const row = document.createElement('div');
         row.className = 'installment';
         appendTextElement(row, 'span', '', `${term} cuotas de`);
-        appendTextElement(row, 'strong', '', formatARS(financedTotal / term));
+        appendTextElement(row, 'strong', '', formatARS(installmentValue));
         installmentsBox.append(row);
       });
       body.append(installmentsBox);
@@ -447,7 +546,7 @@
       buyButton.className = 'button button-primary';
       buyButton.type = 'button';
       buyButton.textContent = 'Comprar directo';
-      buyButton.addEventListener('click', () => buyDirect(fullName, product.precioUSD, priceARS));
+      buyButton.addEventListener('click', () => buyDirect(fullName, product.precioUSD, priceCash));
 
       const tradeInButton = document.createElement('button');
       tradeInButton.className = 'button button-secondary';
@@ -463,10 +562,18 @@
     function renderProducts(products) {
       catalog.replaceChildren();
       if (!products.length) {
-        setStatus('Por el momento no hay equipos con stock disponible.');
+        setStatus('Por el momento no hay equipos disponibles.');
         return;
       }
-      products.forEach((product) => catalog.append(createProductCard(product)));
+      let currentSection = '';
+      products.forEach((product) => {
+        if (product.section !== currentSection) {
+          currentSection = product.section;
+          appendTextElement(catalog, 'h2', 'catalog-section-title', product.section);
+          if (product.warranty) appendTextElement(catalog, 'p', 'catalog-section-subtitle', product.warranty);
+        }
+        catalog.append(createProductCard(product));
+      });
     }
 
     async function loadCatalog() {
@@ -495,7 +602,6 @@
           throw new Error('La hoja no contiene datos.');
         }
 
-        config = getConfiguration(results.data[0]);
         renderProducts(getAvailableProducts(results.data));
       } catch (error) {
         console.error('Error al cargar el catálogo:', error);
