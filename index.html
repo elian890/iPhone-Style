@@ -3,18 +3,18 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="theme-color" content="#050505">
+  <meta name="theme-color" content="#a90816">
   <title>iPhone Style | Catálogo Premium</title>
   <style>
     :root {
-      --bg: #050505;
-      --surface: #121212;
-      --surface-soft: #1c1c1e;
+      --bg: #090405;
+      --surface: #17090b;
+      --surface-soft: #260b0f;
       --text: #f5f5f7;
-      --muted: #a1a1a6;
-      --accent: #2997ff;
-      --accent-hover: #147ce5;
-      --border: #333336;
+      --muted: #c3a7aa;
+      --accent: #d90d20;
+      --accent-hover: #f12235;
+      --border: #562027;
       --success: #28c840;
       --danger: #ff6961;
     }
@@ -26,7 +26,7 @@
     body {
       margin: 0;
       min-width: 320px;
-      background: var(--bg);
+      background: radial-gradient(circle at 50% -20%, #4b0811 0, var(--bg) 34rem);
       color: var(--text);
       font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
       line-height: 1.5;
@@ -39,22 +39,18 @@
       position: sticky;
       top: 0;
       z-index: 10;
-      padding: 1rem 5%;
+      min-height: 76px;
+      padding: .5rem 5%;
       text-align: center;
-      background: rgba(18, 18, 18, .85);
+      background: rgba(23, 9, 11, .88);
       border-bottom: 1px solid var(--border);
       backdrop-filter: blur(14px);
     }
 
-    .logo {
-      color: var(--text);
-      font-size: 1.5rem;
-      font-weight: 700;
-      letter-spacing: -.5px;
-      text-decoration: none;
-    }
-
-    .logo span { font-weight: 300; }
+    .logo { display: inline-flex; align-items: center; justify-content: center; text-decoration: none; }
+    .brand-image { display: block; width: 58px; height: 58px; object-fit: contain; border-radius: 10px; }
+    .brand-fallback { display: none; color: #fff; font-size: 1.15rem; font-weight: 800; letter-spacing: -.7px; }
+    .brand-fallback span { display: block; font-weight: 400; }
 
     .hero { padding: 4rem 1rem 2rem; text-align: center; }
 
@@ -103,7 +99,7 @@
       transition: transform .2s ease, border-color .2s ease;
     }
 
-    .card:hover { transform: translateY(-4px); border-color: #525257; }
+    .card:hover { transform: translateY(-4px); border-color: #a52431; }
 
     .card-image {
       display: flex;
@@ -118,8 +114,24 @@
 
     .card-body { display: flex; flex: 1; flex-direction: column; padding: 1.35rem; }
     .card-title { margin: 0 0 .5rem; font-size: 1.35rem; line-height: 1.2; }
-    .price-usd { margin-bottom: .2rem; font-size: 1.75rem; font-weight: 700; }
+    .price-usd { margin-bottom: .2rem; color: #fff; font-size: 1.75rem; font-weight: 700; }
     .price-ars { min-height: 1.5rem; margin-bottom: 1.3rem; color: var(--muted); }
+
+    .gift-box {
+      display: flex;
+      gap: .65rem;
+      align-items: flex-start;
+      margin: -.1rem 0 1.25rem;
+      padding: .8rem .85rem;
+      color: #ffe9eb;
+      background: linear-gradient(135deg, rgba(217, 13, 32, .2), rgba(217, 13, 32, .06));
+      border: 1px solid rgba(241, 34, 53, .45);
+      border-radius: 11px;
+      font-size: .88rem;
+      line-height: 1.35;
+    }
+
+    .gift-box strong { color: #fff; }
 
     .installments {
       padding: 1rem;
@@ -167,11 +179,11 @@
     }
 
     .button:hover { transform: translateY(-1px); }
-    .button:focus-visible, .modal-close:focus-visible { outline: 3px solid rgba(41, 151, 255, .55); outline-offset: 2px; }
+    .button:focus-visible, .modal-close:focus-visible, .floating-whatsapp:focus-visible { outline: 3px solid rgba(241, 34, 53, .7); outline-offset: 3px; }
     .button-primary { color: #fff; background: var(--accent); }
     .button-primary:hover { background: var(--accent-hover); }
     .button-secondary { color: var(--accent); background: transparent; border-color: var(--accent); }
-    .button-secondary:hover { background: rgba(41, 151, 255, .12); }
+    .button-secondary:hover { background: rgba(217, 13, 32, .12); }
     .button-whatsapp { gap: .55rem; color: #fff; background: var(--success); }
     .button-whatsapp:hover { background: #20a033; }
 
@@ -240,6 +252,43 @@
     .form-control:invalid:not(:placeholder-shown) { border-color: var(--danger); }
     textarea.form-control { min-height: 82px; resize: vertical; }
 
+    .floating-whatsapp {
+      position: fixed;
+      right: 1.25rem;
+      bottom: 1.25rem;
+      z-index: 15;
+      display: grid;
+      width: 60px;
+      height: 60px;
+      place-items: center;
+      color: #fff;
+      background: #25d366;
+      border: 3px solid rgba(255, 255, 255, .92);
+      border-radius: 50%;
+      box-shadow: 0 8px 24px rgba(0, 0, 0, .45);
+      transition: transform .2s ease, background-color .2s ease;
+    }
+
+    .floating-whatsapp:hover { background: #1ebe5a; transform: scale(1.08); }
+    .floating-whatsapp svg { width: 30px; height: 30px; }
+
+    .loading-screen {
+      position: fixed;
+      inset: 0;
+      z-index: 100;
+      display: grid;
+      place-items: center;
+      padding: 2rem;
+      background: radial-gradient(circle at 50% 15%, #e0182c, #9a0714 47%, #520409 100%);
+      transition: opacity .35s ease, visibility .35s ease;
+    }
+
+    .loading-screen.is-hidden { visibility: hidden; opacity: 0; pointer-events: none; }
+    .loading-brand { display: grid; justify-items: center; gap: 1rem; color: white; text-align: center; }
+    .loading-brand .brand-image { width: min(220px, 55vw); height: min(220px, 55vw); border-radius: 20px; box-shadow: 0 16px 40px rgba(45,0,5,.35); }
+    .loading-brand .brand-fallback { font-size: clamp(2.2rem, 10vw, 4rem); line-height: .9; }
+    .loading-brand p { margin: 0; font-weight: 600; letter-spacing: .4px; }
+
     @media (max-width: 600px) {
       .hero { padding-top: 2.8rem; }
       .container { padding: 1rem 1rem 2.5rem; }
@@ -248,7 +297,20 @@
   </style>
 </head>
 <body>
-  <header><a class="logo" href="#inicio" aria-label="iPhone Style, ir al inicio">iPhone <span>Style</span></a></header>
+  <div id="loadingScreen" class="loading-screen" role="status" aria-live="polite" aria-label="Cargando iPhone Style">
+    <div class="loading-brand">
+      <img class="brand-image" src="img/logo-iph-style.png" alt="iPhone Style" onerror="this.style.display='none'; this.nextElementSibling.style.display='block';">
+      <div class="brand-fallback">IPHONE <span>STYLE </span></div>
+      <p>Cargando catálogo…</p>
+    </div>
+  </div>
+
+  <header>
+    <a class="logo" href="#inicio" aria-label="iPhone Style, ir al inicio">
+      <img class="brand-image" src="img/logo-iph-style.png" alt="iPhone Style" onerror="this.style.display='none'; this.nextElementSibling.style.display='block';">
+      <span class="brand-fallback">IPHONE <span>STYLE </span></span>
+    </a>
+  </header>
 
   <main id="inicio">
     <section class="hero" aria-labelledby="main-title">
@@ -308,6 +370,10 @@
     </section>
   </div>
 
+  <a class="floating-whatsapp" href="https://wa.me/5493476658161?text=Hola%20iPhone%20Style%21%20Quiero%20hacer%20una%20consulta." target="_blank" rel="noopener noreferrer" aria-label="Escribir a iPhone Style por WhatsApp">
+    <svg aria-hidden="true" viewBox="0 0 32 32" fill="currentColor"><path d="M19.11 17.2c-.28-.14-1.66-.82-1.92-.91-.26-.1-.45-.14-.64.14-.19.28-.73.91-.9 1.1-.16.19-.33.21-.61.07-.28-.14-1.18-.44-2.25-1.39-.83-.74-1.39-1.66-1.55-1.94-.16-.28-.02-.43.12-.57.12-.12.28-.33.42-.49.14-.16.19-.28.28-.47.09-.19.05-.35-.02-.49-.07-.14-.64-1.55-.87-2.12-.23-.55-.47-.48-.64-.49h-.55c-.19 0-.49.07-.75.35-.26.28-.99.97-.99 2.37s1.01 2.76 1.15 2.95c.14.19 1.98 3.02 4.79 4.24.67.29 1.19.46 1.6.59.67.21 1.28.18 1.76.11.54-.08 1.66-.68 1.9-1.34.23-.66.23-1.23.16-1.34-.07-.12-.26-.19-.54-.33Z"/><path d="M16.03 3.2a12.79 12.79 0 0 0-10.86 19.56L3.3 28.8l6.2-1.82A12.8 12.8 0 1 0 16.03 3.2Zm0 23.25c-2.05 0-4.06-.55-5.82-1.6l-.42-.25-3.68 1.08 1.1-3.59-.27-.44a10.44 10.44 0 1 1 9.09 4.8Z"/></svg>
+  </a>
+
   <!-- Papa Parse maneja campos entre comillas, comas y saltos de línea dentro de las celdas. -->
   <script src="https://cdn.jsdelivr.net/npm/papaparse@5.5.3/papaparse.min.js"></script>
   <script>
@@ -318,15 +384,32 @@
     const WHATSAPP_NUMBER = '5493476658161';
     const INSTALLMENTS = [3, 6, 9, 12, 18];
     // Fotos locales de respaldo. Si la hoja incluye una columna IMAGEN, esa URL tiene prioridad.
+    // Los archivos viven en la raíz del repositorio porque GitHub los publica así al cargarlos desde su formulario web.
+    const PRODUCT_IMAGE_FILES = {
+      'IPHONE 13|BLUE': 'iphone-13-blue.jpg',
+      'IPHONE 13|RED': 'iphone-13-red.jpg',
+      'IPHONE 13 PRO MAX|SIERRA BLUE': 'iphone-13-pro-max-sierra-blue.jpg',
+      'IPHONE 13 PRO MAX|ALPINE GREEN': 'iphone-13-pro-max-alpine-green.jpg',
+      'IPHONE 15|BLUE': 'iphone-15-blue.png',
+      'IPHONE 15|BLACK': 'iphone-15-black.jpg',
+      'IPHONE 15 PRO|BLACK': 'iphone-15-pro-black.jpg',
+      'IPHONE 15 PRO|WHITE': 'iphone-15-pro-white.jpg',
+      'IPHONE 15 PRO MAX|BLACK': 'iphone-15-pro-max-black.jpg',
+      'IPHONE 16|BLACK': 'iphone-16-black.png',
+      'IPHONE 16|PINK': 'iphone-16-pink.jpg',
+      'IPHONE 16 PRO|WHITE': 'iphone-16-pro-white.jpg',
+      'IPHONE 16 PRO|NATURAL': 'iphone-16-pro-natural.png',
+      'IPHONE 16 PRO MAX|BLACK': 'iphone-16-pro-max-black.jpg'
+    };
     const MODEL_IMAGE_FILES = {
-      'IPHONE 13': 'img/iphone-13.jpg',
-      'IPHONE 13 PRO MAX': 'img/iphone-13-pro-max.jpg',
-      'IPHONE 15': 'img/iphone-15.jpg',
-      'IPHONE 15 PRO': 'img/iphone-15-pro.jpg',
-      'IPHONE 15 PRO MAX': 'img/iphone-15-pro-max.jpg',
-      'IPHONE 16': 'img/iphone-16.jpg',
-      'IPHONE 16 PRO': 'img/iphone-16-pro.jpg',
-      'IPHONE 16 PRO MAX': 'img/iphone-16-pro-max.jpg'
+      'IPHONE 13': 'iphone-13.jpg',
+      'IPHONE 13 PRO MAX': 'iphone-13-pro-max.jpg',
+      'IPHONE 15': 'iphone-15.jpg',
+      'IPHONE 15 PRO': 'iphone-15-pro.jpg',
+      'IPHONE 15 PRO MAX': 'iphone-15-pro-max.jpg',
+      'IPHONE 16': 'iphone-16.jpg',
+      'IPHONE 16 PRO': 'iphone-16-pro.jpg',
+      'IPHONE 16 PRO MAX': 'iphone-16-pro-max.jpg'
     };
     const PLACEHOLDER_IMAGE = "data:image/svg+xml;charset=UTF-8,%3Csvg xmlns='http://www.w3.org/2000/svg' width='400' height='400' viewBox='0 0 400 400'%3E%3Crect width='400' height='400' fill='%231c1c1e'/%3E%3Cpath d='M160 80h80c15 0 28 13 28 28v184c0 15-13 28-28 28h-80c-15 0-28-13-28-28V108c0-15 13-28 28-28Z' fill='none' stroke='%2386868b' stroke-width='9'/%3E%3Ccircle cx='200' cy='286' r='7' fill='%2386868b'/%3E%3Ctext x='200' y='355' fill='%2386868b' font-family='Arial, sans-serif' font-size='20' text-anchor='middle'%3EFoto del equipo%3C/text%3E%3C/svg%3E";
 
@@ -339,6 +422,7 @@
     const canjeForm = document.getElementById('canjeForm');
     const targetModelText = document.getElementById('targetModelText');
     const canjeModel = document.getElementById('canjeModel');
+    const loadingScreen = document.getElementById('loadingScreen');
 
     const formatARS = (value) => new Intl.NumberFormat('es-AR', {
       style: 'currency', currency: 'ARS', maximumFractionDigits: 0
@@ -383,6 +467,10 @@
       status.className = `status${isError ? ' status-error' : ''}`;
       status.textContent = message;
       catalog.append(status);
+    }
+
+    function hideLoadingScreen() {
+      window.setTimeout(() => loadingScreen.classList.add('is-hidden'), 250);
     }
 
     function normalizeHeader(value) {
@@ -493,7 +581,9 @@
             precioEfectivo: cashIndex === -1 ? Number.NaN : toNumber(row[cashIndex]),
             precioTransferencia: transferIndex === -1 ? Number.NaN : toNumber(row[transferIndex]),
             installments,
-            imagen: (imageIndex === -1 ? '' : normalizeCell(row[imageIndex])) || MODEL_IMAGE_FILES[normalizeHeader(modelo)] || ''
+            imagen: (imageIndex === -1 ? '' : normalizeCell(row[imageIndex])) ||
+              PRODUCT_IMAGE_FILES[`${normalizeHeader(modelo)}|${normalizeHeader(colorIndex === -1 ? '' : row[colorIndex])}`] ||
+              MODEL_IMAGE_FILES[normalizeHeader(modelo)] || ''
           });
         }
       }
@@ -533,10 +623,15 @@
       const productMeta = [product.color && `Color: ${product.color}`, product.bateria && `Batería: ${product.bateria}`, product.detalles && `Detalle: ${product.detalles}`]
         .filter(Boolean).join(' · ');
       if (productMeta) appendTextElement(body, 'p', 'product-meta', productMeta);
-      appendTextElement(body, 'div', 'price-usd', formatUSD(product.precioUSD));
+      appendTextElement(body, 'div', 'price-usd', `Precio en USD: ${formatUSD(product.precioUSD)}`);
       const prices = [`Efectivo: ${formatARS(priceCash)}`];
       if (Number.isFinite(product.precioTransferencia)) prices.push(`Transferencia: ${formatARS(product.precioTransferencia)}`);
       appendTextElement(body, 'div', 'price-ars', prices.join(' · '));
+
+      const gift = document.createElement('div');
+      gift.className = 'gift-box';
+      gift.innerHTML = '<span aria-hidden="true">🎁</span><span><strong>Con tu compra te regalamos:</strong><br>Cargador de carga rápida + cable + funda + vidrio templado + garantía.</span>';
+      body.append(gift);
 
       const installmentsBox = document.createElement('section');
       installmentsBox.className = 'installments';
@@ -556,7 +651,7 @@
       const buyButton = document.createElement('button');
       buyButton.className = 'button button-primary';
       buyButton.type = 'button';
-      buyButton.textContent = 'Comprar directo';
+      buyButton.textContent = 'Comprar';
       buyButton.addEventListener('click', () => buyDirect(fullName, product.precioUSD, priceCash));
 
       const tradeInButton = document.createElement('button');
@@ -590,6 +685,7 @@
     async function loadCatalog() {
       if (typeof Papa === 'undefined') {
         setStatus('No se pudo cargar el lector de datos. Actualizá la página e intentá nuevamente.', true);
+        hideLoadingScreen();
         return;
       }
 
@@ -618,6 +714,8 @@
         console.error('Error al cargar el catálogo:', error);
         const detail = error instanceof Error ? error.message : 'Error desconocido.';
         setStatus(`No se pudo cargar el catálogo: ${detail}`, true);
+      } finally {
+        hideLoadingScreen();
       }
     }
 
