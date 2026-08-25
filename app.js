@@ -124,7 +124,9 @@
     return products;
   };
 
-  const getProductImage = ({ model, color }) => {
+  const getProductImage = ({ image, model, color }) => {
+    // La foto cargada desde la planilla es la foto real del equipo y tiene prioridad.
+    if (image) return image;
     const modelKey = headerKey(model);
     const colorKey = headerKey(color);
     const colorImage = Object.entries(COLOR_IMAGES[modelKey] || {}).find(([colorName]) => colorKey.includes(colorName))?.[1];
@@ -208,7 +210,7 @@
     const productName = [model, capacity].filter(Boolean).join(' · ');
     state.lastLightboxFocus = document.activeElement;
     elements.lightboxTitle.textContent = productName;
-    elements.lightboxDescription.textContent = 'Con la compra de cualquier equipo te llevás un cargador de carga rápida + cable + funda + vidrio templado + una GARANTÍA de regalo. 🎁';
+    elements.lightboxDescription.textContent = 'Con la compra de cualquier equipo te llevás un cargador de carga rápida + cable + funda + vidrio templado + una GARANTÍA de regalo. 🎁 Compra seguro y tranquilo en iPhone Style.';
     elements.lightboxImage.src = image.currentSrc || image.src || PLACEHOLDER_IMAGE;
     elements.lightboxImage.alt = `Vista ampliada de ${productName}`;
     elements.lightbox.classList.add('is-open');
