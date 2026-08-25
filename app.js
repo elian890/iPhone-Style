@@ -19,9 +19,11 @@
   const $ = (selector, scope = document) => scope.querySelector(selector);
   const elements = {
     catalog: $('#catalog'), preloader: $('#preloader'), modal: $('#canjeModal'), modalClose: $('#closeModal'),
-    tradeinForm: $('#tradeinForm'), targetProduct: $('#targetProduct'), currentYear: $('#currentYear')
+    tradeinForm: $('#tradeinForm'), targetProduct: $('#targetProduct'), currentYear: $('#currentYear'),
+    lightbox: $('#productLightbox'), lightboxClose: $('#closeLightbox'), lightboxImage: $('#lightboxImage'),
+    lightboxTitle: $('#lightboxTitle'), lightboxDescription: $('#lightboxDescription')
   };
-  const state = { selectedProduct: '', lastFocus: null, selectedCard: null, dollarRate: 0 };
+  const state = { selectedProduct: '', lastFocus: null, lastLightboxFocus: null, selectedCard: null, dollarRate: 0 };
 
   const normalize = (value = '') => String(value).replace(/^\uFEFF/, '').trim();
   const headerKey = (value) => normalize(value).normalize('NFD').replace(/[\u0300-\u036f]/g, '').toUpperCase();
@@ -127,8 +129,11 @@
     const cashPrice = Number.isFinite(cash) ? cash : usd * state.dollarRate;
     const card = document.createElement('article');
     card.className = 'product-card';
-    const imageBox = append(card, 'div', 'product-card__image');
+    const imageBox = append(card, 'button', 'product-card__image');
+    imageBox.type = 'button';
+    imageBox.setAttribute('aria-label', `Ampliar foto de ${name}`);
     imageBox.append(buildImage(product));
+    imageBox.addEventListener('click', () => openLightbox(product, imageBox.querySelector('img')));
     const body = append(card, 'div', 'product-card__body');
     append(body, 'h3', 'product-card__title', name);
     const meta = [color && `Color: ${color}`, battery && `Batería: ${battery}`, details && `Detalle: ${details}`].filter(Boolean).join(' · ');
@@ -156,6 +161,10 @@
     const tradein = append(actions, 'button', 'button button--secondary', 'Plan Canje');
     tradein.type = 'button';
     tradein.addEventListener('click', () => openModal(name, card));
+    card.addEventListener('click', ({ target }) => {
+      if (target.closest('button, a')) return;
+      openLightbox(product, imageBox.querySelector('img'));
+    });
     return card;
   };
 
@@ -176,6 +185,26 @@
   };
 
   const openWhatsApp = (message) => window.open(`https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(message)}`, '_blank', 'noopener,noreferrer');
+  const openLightbox = (product, image) => {
+    const { model, capacity, color, battery, details } = product;
+    const productName = [model, capacity].filter(Boolean).join(' · ');
+    const attributes = [color && `acabado ${color}`, battery && `batería ${battery}`].filter(Boolean).join(', ');
+    state.lastLightboxFocus = document.activeElement;
+    elements.lightboxTitle.textContent = productName;
+    elements.lightboxDescription.textContent = `${attributes ? `Una selección con ${attributes}. ` : ''}${details ? `${details}. ` : ''}Un equipo elegido para disfrutar una experiencia Apple premium desde el primer día.`;
+    elements.lightboxImage.src = image.currentSrc || image.src || PLACEHOLDER_IMAGE;
+    elements.lightboxImage.alt = `Vista ampliada de ${productName}`;
+    elements.lightbox.classList.add('is-open');
+    elements.lightbox.setAttribute('aria-hidden', 'false');
+    document.body.classList.add('modal-open');
+    elements.lightboxClose.focus();
+  };
+  const closeLightbox = () => {
+    elements.lightbox.classList.remove('is-open');
+    elements.lightbox.setAttribute('aria-hidden', 'true');
+    document.body.classList.remove('modal-open');
+    state.lastLightboxFocus?.focus();
+  };
   const openModal = (productName, card) => {
     state.selectedProduct = productName;
     state.lastFocus = document.activeElement;
@@ -209,9 +238,11 @@
   };
 
   const trapModalFocus = (event) => {
-    if (event.key === 'Escape' && elements.modal.classList.contains('is-open')) return closeModal();
-    if (event.key !== 'Tab' || !elements.modal.classList.contains('is-open')) return;
-    const focusable = [...elements.modal.querySelectorAll('button, input, select, textarea, [href]')].filter((node) => !node.disabled);
+    const activeLayer = elements.lightbox.classList.contains('is-open') ? elements.lightbox : elements.modal;
+    const isOpen = activeLayer.classList.contains('is-open');
+    if (event.key === 'Escape' && isOpen) return activeLayer === elements.lightbox ? closeLightbox() : closeModal();
+    if (event.key !== 'Tab' || !isOpen) return;
+    const focusable = [...activeLayer.querySelectorAll('button, input, select, textarea, [href]')].filter((node) => !node.disabled);
     const [first] = focusable; const last = focusable.at(-1);
     if (event.shiftKey && document.activeElement === first) { event.preventDefault(); last.focus(); }
     if (!event.shiftKey && document.activeElement === last) { event.preventDefault(); first.focus(); }
@@ -243,6 +274,9 @@
     configureBrandFallbacks();
     elements.modalClose.addEventListener('click', closeModal);
     elements.modal.addEventListener('click', ({ target }) => { if (target === elements.modal) closeModal(); });
+    elements.lightboxClose.addEventListener('click', closeLightbox);
+    elements.lightbox.addEventListener('click', ({ target }) => { if (target === elements.lightbox) closeLightbox(); });
+    elements.lightboxImage.addEventListener('error', () => { elements.lightboxImage.src = PLACEHOLDER_IMAGE; }, { once: true });
     elements.tradeinForm.addEventListener('submit', handleTradeinSubmit);
     document.addEventListener('keydown', trapModalFocus);
     loadCatalog();
