@@ -5,14 +5,24 @@
   const WHATSAPP_NUMBER = '5493476658161';
   const INSTALLMENTS = [3, 6, 9, 12, 18];
   const MODEL_IMAGES = {
-    'IPHONE 13': 'iphone-13.jpg',
-    'IPHONE 13 PRO MAX': 'iphone-13-pro-max.jpg',
-    'IPHONE 15': 'iphone-15.jpg',
-    'IPHONE 15 PRO': 'iphone-15-pro.jpg',
-    'IPHONE 15 PRO MAX': 'iphone-15-pro-max.jpg',
-    'IPHONE 16': 'iphone-16.jpg',
-    'IPHONE 16 PRO': 'iphone-16-pro.jpg',
-    'IPHONE 16 PRO MAX': 'iphone-16-pro-max.jpg'
+    'IPHONE 13': 'img/iphone-13.jpg',
+    'IPHONE 13 PRO MAX': 'img/iphone-13-pro-max.jpg',
+    'IPHONE 15': 'img/iphone-15.jpg',
+    'IPHONE 15 PRO': 'img/iphone-15-pro.jpg',
+    'IPHONE 15 PRO MAX': 'img/iphone-15-pro-max.jpg',
+    'IPHONE 16': 'img/iphone-16.jpg',
+    'IPHONE 16 PRO': 'img/iphone-16-pro.jpg',
+    'IPHONE 16 PRO MAX': 'img/iphone-16-pro-max.jpg'
+  };
+  const COLOR_IMAGES = {
+    'IPHONE 13': { BLUE: 'img/iphone-13-blue.jpg', RED: 'img/iphone-13-red.jpg' },
+    'IPHONE 13 PRO MAX': { 'ALPINE GREEN': 'img/iphone-13-pro-max-alpine-green.jpg', 'SIERRA BLUE': 'img/iphone-13-pro-max-sierra-blue.jpg' },
+    'IPHONE 15': { BLACK: 'img/iphone-15-black.jpg', BLUE: 'img/iphone-15-blue.png' },
+    'IPHONE 15 PRO': { BLACK: 'img/iphone-15-pro-black.jpg', WHITE: 'img/iphone-15-pro-white.jpg' },
+    'IPHONE 15 PRO MAX': { BLACK: 'img/iphone-15-pro-max-black.jpg' },
+    'IPHONE 16': { BLACK: 'img/iphone-16-black.png', PINK: 'img/iphone-16-pink.jpg' },
+    'IPHONE 16 PRO': { BLACK: 'img/iphone-16-pro.jpg', WHITE: 'img/iphone-16-pro-white.jpg', NATURAL: 'img/iphone-16-pro-natural.png' },
+    'IPHONE 16 PRO MAX': { BLACK: 'img/iphone-16-pro-max-black.jpg' }
   };
   const PLACEHOLDER_IMAGE = "data:image/svg+xml;charset=UTF-8,%3Csvg xmlns='http://www.w3.org/2000/svg' width='480' height='480' viewBox='0 0 480 480'%3E%3Crect width='480' height='480' fill='%231b1b1d'/%3E%3Crect x='158' y='70' width='164' height='340' rx='30' fill='none' stroke='%2386868b' stroke-width='10'/%3E%3Ccircle cx='240' cy='378' r='8' fill='%2386868b'/%3E%3C/svg%3E";
 
@@ -114,11 +124,19 @@
     return products;
   };
 
-  const buildImage = ({ image, model }) => {
+  const getProductImage = ({ model, color }) => {
+    const modelKey = headerKey(model);
+    const colorKey = headerKey(color);
+    const colorImage = Object.entries(COLOR_IMAGES[modelKey] || {}).find(([colorName]) => colorKey.includes(colorName))?.[1];
+    return colorImage || MODEL_IMAGES[modelKey] || PLACEHOLDER_IMAGE;
+  };
+
+  const buildImage = (product) => {
     const element = document.createElement('img');
-    element.src = image || MODEL_IMAGES[headerKey(model)] || PLACEHOLDER_IMAGE;
-    element.alt = model;
+    element.src = getProductImage(product);
+    element.alt = product.model;
     element.loading = 'lazy';
+    element.decoding = 'async';
     element.addEventListener('error', () => { if (element.src !== PLACEHOLDER_IMAGE) element.src = PLACEHOLDER_IMAGE; }, { once: true });
     return element;
   };
@@ -186,12 +204,11 @@
 
   const openWhatsApp = (message) => window.open(`https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(message)}`, '_blank', 'noopener,noreferrer');
   const openLightbox = (product, image) => {
-    const { model, capacity, color, battery, details } = product;
+    const { model, capacity } = product;
     const productName = [model, capacity].filter(Boolean).join(' · ');
-    const attributes = [color && `acabado ${color}`, battery && `batería ${battery}`].filter(Boolean).join(', ');
     state.lastLightboxFocus = document.activeElement;
     elements.lightboxTitle.textContent = productName;
-    elements.lightboxDescription.textContent = `${attributes ? `Una selección con ${attributes}. ` : ''}${details ? `${details}. ` : ''}Un equipo elegido para disfrutar una experiencia Apple premium desde el primer día.`;
+    elements.lightboxDescription.textContent = 'Con la compra de cualquier equipo te llevás un cargador de carga rápida + cable + funda + vidrio templado + una GARANTÍA de regalo. 🎁';
     elements.lightboxImage.src = image.currentSrc || image.src || PLACEHOLDER_IMAGE;
     elements.lightboxImage.alt = `Vista ampliada de ${productName}`;
     elements.lightbox.classList.add('is-open');
