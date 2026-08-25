@@ -1,0 +1,579 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#050505">
+  <title>iPhone Style | Catálogo Premium</title>
+  <style>
+    :root {
+      --bg: #050505;
+      --surface: #121212;
+      --surface-soft: #1c1c1e;
+      --text: #f5f5f7;
+      --muted: #a1a1a6;
+      --accent: #2997ff;
+      --accent-hover: #147ce5;
+      --border: #333336;
+      --success: #28c840;
+      --danger: #ff6961;
+    }
+
+    * { box-sizing: border-box; }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      margin: 0;
+      min-width: 320px;
+      background: var(--bg);
+      color: var(--text);
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      line-height: 1.5;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    button, input, select, textarea { font: inherit; }
+
+    header {
+      position: sticky;
+      top: 0;
+      z-index: 10;
+      padding: 1rem 5%;
+      text-align: center;
+      background: rgba(18, 18, 18, .85);
+      border-bottom: 1px solid var(--border);
+      backdrop-filter: blur(14px);
+    }
+
+    .logo {
+      color: var(--text);
+      font-size: 1.5rem;
+      font-weight: 700;
+      letter-spacing: -.5px;
+      text-decoration: none;
+    }
+
+    .logo span { font-weight: 300; }
+
+    .hero { padding: 4rem 1rem 2rem; text-align: center; }
+
+    .hero h1 { margin: 0 0 .5rem; font-size: clamp(2rem, 6vw, 3.1rem); letter-spacing: -1.5px; }
+    .hero p { margin: 0; color: var(--muted); font-size: 1.08rem; }
+
+    .container { width: min(1200px, 100%); margin: 0 auto; padding: 1.5rem 2rem 3rem; }
+
+    .catalog-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(min(100%, 300px), 1fr));
+      gap: 1.5rem;
+    }
+
+    .status {
+      grid-column: 1 / -1;
+      margin: 1rem 0;
+      padding: 1.25rem;
+      color: var(--muted);
+      text-align: center;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+    }
+
+    .status-error { color: #ffd0cc; border-color: rgba(255, 105, 97, .55); }
+
+    .card {
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 18px;
+      transition: transform .2s ease, border-color .2s ease;
+    }
+
+    .card:hover { transform: translateY(-4px); border-color: #525257; }
+
+    .card-image {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      height: 250px;
+      padding: 1rem;
+      background: var(--surface-soft);
+    }
+
+    .card-image img { max-width: 100%; max-height: 100%; object-fit: contain; }
+
+    .card-body { display: flex; flex: 1; flex-direction: column; padding: 1.35rem; }
+    .card-title { margin: 0 0 .5rem; font-size: 1.35rem; line-height: 1.2; }
+    .price-usd { margin-bottom: .2rem; font-size: 1.75rem; font-weight: 700; }
+    .price-ars { min-height: 1.5rem; margin-bottom: 1.3rem; color: var(--muted); }
+
+    .installments {
+      padding: 1rem;
+      margin-bottom: 1.35rem;
+      background: rgba(255, 255, 255, .03);
+      border-radius: 12px;
+    }
+
+    .installments h4 {
+      margin: 0 0 .7rem;
+      color: var(--muted);
+      font-size: .8rem;
+      font-weight: 600;
+      letter-spacing: 1px;
+      text-align: center;
+      text-transform: uppercase;
+    }
+
+    .installment {
+      display: flex;
+      justify-content: space-between;
+      gap: .75rem;
+      padding: .38rem 0;
+      font-size: .94rem;
+      border-bottom: 1px solid rgba(255, 255, 255, .06);
+    }
+
+    .installment:last-child { border-bottom: 0; padding-bottom: 0; }
+    .installment strong { white-space: nowrap; }
+
+    .actions { display: grid; gap: .75rem; margin-top: auto; }
+
+    .button {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 48px;
+      padding: .75rem 1rem;
+      border: 1px solid transparent;
+      border-radius: 999px;
+      cursor: pointer;
+      font-weight: 650;
+      text-align: center;
+      transition: background-color .2s ease, border-color .2s ease, transform .2s ease;
+    }
+
+    .button:hover { transform: translateY(-1px); }
+    .button:focus-visible, .modal-close:focus-visible { outline: 3px solid rgba(41, 151, 255, .55); outline-offset: 2px; }
+    .button-primary { color: #fff; background: var(--accent); }
+    .button-primary:hover { background: var(--accent-hover); }
+    .button-secondary { color: var(--accent); background: transparent; border-color: var(--accent); }
+    .button-secondary:hover { background: rgba(41, 151, 255, .12); }
+    .button-whatsapp { gap: .55rem; color: #fff; background: var(--success); }
+    .button-whatsapp:hover { background: #20a033; }
+
+    .modal-overlay {
+      position: fixed;
+      inset: 0;
+      z-index: 20;
+      display: grid;
+      place-items: center;
+      padding: 1rem;
+      visibility: hidden;
+      opacity: 0;
+      background: rgba(0, 0, 0, .82);
+      backdrop-filter: blur(5px);
+      transition: opacity .2s ease, visibility .2s ease;
+    }
+
+    .modal-overlay.active { visibility: visible; opacity: 1; }
+
+    .modal {
+      position: relative;
+      width: min(500px, 100%);
+      max-height: calc(100vh - 2rem);
+      padding: 2rem;
+      overflow: auto;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      transform: translateY(18px);
+      transition: transform .2s ease;
+    }
+
+    .modal-overlay.active .modal { transform: translateY(0); }
+    .modal h2 { margin: 0 2rem .35rem 0; font-size: 1.5rem; }
+    .modal-subtitle { margin: 0 0 1.4rem; color: var(--muted); }
+    .modal-close {
+      position: absolute;
+      top: 1.1rem;
+      right: 1.1rem;
+      width: 38px;
+      height: 38px;
+      padding: 0;
+      color: var(--muted);
+      background: transparent;
+      border: 0;
+      border-radius: 50%;
+      cursor: pointer;
+      font-size: 1.8rem;
+      line-height: 1;
+    }
+    .modal-close:hover { color: var(--text); background: rgba(255,255,255,.08); }
+
+    .form-group { margin-bottom: 1.05rem; }
+    .form-group label { display: block; margin-bottom: .45rem; color: var(--muted); font-size: .92rem; }
+    .form-control {
+      width: 100%;
+      min-height: 45px;
+      padding: .7rem .85rem;
+      color: #fff;
+      background: rgba(255,255,255,.05);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      outline: none;
+    }
+    .form-control:focus { border-color: var(--accent); }
+    .form-control:invalid:not(:placeholder-shown) { border-color: var(--danger); }
+    textarea.form-control { min-height: 82px; resize: vertical; }
+
+    @media (max-width: 600px) {
+      .hero { padding-top: 2.8rem; }
+      .container { padding: 1rem 1rem 2.5rem; }
+      .modal { padding: 1.5rem; }
+    }
+  </style>
+</head>
+<body>
+  <header><a class="logo" href="#inicio" aria-label="iPhone Style, ir al inicio">iPhone <span>Style</span></a></header>
+
+  <main id="inicio">
+    <section class="hero" aria-labelledby="main-title">
+      <h1 id="main-title">Actualizá tu equipo hoy</h1>
+      <p>Precios exclusivos. Cuotas fijas. Plan Canje disponible.</p>
+    </section>
+
+    <section class="container" aria-label="Catálogo de equipos disponibles">
+      <div id="catalog" class="catalog-grid" aria-live="polite">
+        <p class="status">Cargando catálogo premium…</p>
+      </div>
+    </section>
+  </main>
+
+  <div id="canjeModal" class="modal-overlay" aria-hidden="true">
+    <section class="modal" role="dialog" aria-modal="true" aria-labelledby="canjeTitle" aria-describedby="canjeDescription">
+      <button id="closeModalButton" class="modal-close" type="button" aria-label="Cerrar Plan Canje">×</button>
+      <h2 id="canjeTitle">Plan Canje</h2>
+      <p id="canjeDescription" class="modal-subtitle">Estás interesado en un <strong id="targetModelText">equipo</strong>. Contanos sobre tu equipo actual para cotizar la diferencia.</p>
+
+      <form id="canjeForm" novalidate>
+        <div class="form-group">
+          <label for="canjeModel">Modelo a entregar</label>
+          <input id="canjeModel" class="form-control" type="text" placeholder="Ej.: iPhone 13 Pro" autocomplete="off" required>
+        </div>
+        <div class="form-group">
+          <label for="canjeGB">Capacidad</label>
+          <select id="canjeGB" class="form-control" required>
+            <option value="64 GB">64 GB</option>
+            <option value="128 GB" selected>128 GB</option>
+            <option value="256 GB">256 GB</option>
+            <option value="512 GB">512 GB</option>
+            <option value="1 TB">1 TB</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label for="canjeBattery">Condición de batería (%)</label>
+          <input id="canjeBattery" class="form-control" type="number" inputmode="numeric" placeholder="Ej.: 85" min="1" max="100" required>
+        </div>
+        <div class="form-group">
+          <label for="canjeCondition">Estado general</label>
+          <select id="canjeCondition" class="form-control" required>
+            <option value="Impecable (sin marcas)">Impecable (sin marcas)</option>
+            <option value="Marcas normales de uso">Marcas normales de uso</option>
+            <option value="Detalles estéticos marcados">Detalles estéticos marcados</option>
+            <option value="Vidrio o tapa rota">Vidrio o tapa rota</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label for="canjeDetails">Piezas cambiadas o detalles extra <small>(opcional)</small></label>
+          <textarea id="canjeDetails" class="form-control" placeholder="Ej.: Batería cambiada, True Tone no funciona. Si está todo original, dejalo vacío."></textarea>
+        </div>
+        <button class="button button-whatsapp" type="submit" aria-label="Enviar cotización por WhatsApp">
+          <span aria-hidden="true">◉</span> Cotizar diferencia por WhatsApp
+        </button>
+      </form>
+    </section>
+  </div>
+
+  <!-- Papa Parse maneja campos entre comillas, comas y saltos de línea dentro de las celdas. -->
+  <script src="https://cdn.jsdelivr.net/npm/papaparse@5.5.3/papaparse.min.js"></script>
+  <script>
+    'use strict';
+
+    // Fuente de datos de Google Sheets. La hoja debe estar publicada o tener acceso público de lectura.
+    const CSV_URL = 'https://docs.google.com/spreadsheets/d/1A76HzLtPNQZq3cG-XgsqSTBLYRH7BusSB4MD2wA52OA/export?format=csv&gid=0';
+    const WHATSAPP_NUMBER = '5493476658161';
+    const INSTALLMENTS = [3, 6, 9, 12, 18];
+    const PLACEHOLDER_IMAGE = "data:image/svg+xml;charset=UTF-8,%3Csvg xmlns='http://www.w3.org/2000/svg' width='400' height='400' viewBox='0 0 400 400'%3E%3Crect width='400' height='400' fill='%231c1c1e'/%3E%3Cpath d='M160 80h80c15 0 28 13 28 28v184c0 15-13 28-28 28h-80c-15 0-28-13-28-28V108c0-15 13-28 28-28Z' fill='none' stroke='%2386868b' stroke-width='9'/%3E%3Ccircle cx='200' cy='286' r='7' fill='%2386868b'/%3E%3Ctext x='200' y='355' fill='%2386868b' font-family='Arial, sans-serif' font-size='20' text-anchor='middle'%3EFoto del equipo%3C/text%3E%3C/svg%3E";
+
+    let config = { dolar: 0, recargos: {}, whatsapp: WHATSAPP_NUMBER };
+    let selectedProductForCanje = '';
+    let lastFocusedElement = null;
+
+    const catalog = document.getElementById('catalog');
+    const canjeModal = document.getElementById('canjeModal');
+    const canjeForm = document.getElementById('canjeForm');
+    const targetModelText = document.getElementById('targetModelText');
+    const canjeModel = document.getElementById('canjeModel');
+
+    const formatARS = (value) => new Intl.NumberFormat('es-AR', {
+      style: 'currency', currency: 'ARS', maximumFractionDigits: 0
+    }).format(value);
+
+    const formatUSD = (value) => new Intl.NumberFormat('en-US', {
+      style: 'currency', currency: 'USD', maximumFractionDigits: 0
+    }).format(value);
+
+    function normalizeCell(value) {
+      return String(value ?? '').replace(/^\uFEFF/, '').trim();
+    }
+
+    // Acepta valores de Sheets como 1350, 1.350, 1.350,50 o 1,350.50.
+    function toNumber(value) {
+      const raw = normalizeCell(value).replace(/\s/g, '');
+      if (!raw) return Number.NaN;
+
+      const comma = raw.lastIndexOf(',');
+      const dot = raw.lastIndexOf('.');
+      let normalized = raw;
+
+      if (comma !== -1 && dot !== -1) {
+        normalized = comma > dot
+          ? raw.replace(/\./g, '').replace(',', '.')
+          : raw.replace(/,/g, '');
+      } else if (comma !== -1) {
+        const decimals = raw.length - comma - 1;
+        normalized = decimals === 3 && raw.indexOf(',') === comma ? raw.replace(',', '') : raw.replace(',', '.');
+      } else if (dot !== -1) {
+        const decimals = raw.length - dot - 1;
+        normalized = decimals === 3 && raw.indexOf('.') === dot ? raw.replace('.', '') : raw;
+      }
+      return Number(normalized);
+    }
+
+    function setStatus(message, isError = false) {
+      catalog.replaceChildren();
+      const status = document.createElement('p');
+      status.className = `status${isError ? ' status-error' : ''}`;
+      status.textContent = message;
+      catalog.append(status);
+    }
+
+    function getConfiguration(configRow) {
+      if (!Array.isArray(configRow)) throw new Error('No se encontró la fila 0 de configuración.');
+
+      const dolar = toNumber(configRow[5]);
+      if (!Number.isFinite(dolar) || dolar <= 0) {
+        throw new Error('La tasa de dólar de la fila 0 (columna F) no es válida.');
+      }
+
+      const recargos = {};
+      INSTALLMENTS.forEach((term, index) => {
+        const value = toNumber(configRow[index + 6]);
+        if (!Number.isFinite(value) || value < 0) {
+          throw new Error(`El recargo de ${term} cuotas de la fila 0 no es válido.`);
+        }
+        recargos[term] = value;
+      });
+
+      return { dolar, recargos, whatsapp: WHATSAPP_NUMBER };
+    }
+
+    function getAvailableProducts(rows) {
+      return rows.slice(1).map((row) => {
+        const modelo = normalizeCell(row[0]);
+        const capacidad = normalizeCell(row[1]);
+        const precioUSD = toNumber(row[2]);
+        const stock = toNumber(row[3]);
+        const imagen = normalizeCell(row[4]);
+
+        return { modelo, capacidad, precioUSD, stock, imagen };
+      }).filter((product) => (
+        product.modelo && product.capacidad &&
+        Number.isFinite(product.precioUSD) && product.precioUSD > 0 &&
+        Number.isFinite(product.stock) && product.stock > 0
+      ));
+    }
+
+    function appendTextElement(parent, tagName, className, text) {
+      const element = document.createElement(tagName);
+      if (className) element.className = className;
+      element.textContent = text;
+      parent.append(element);
+      return element;
+    }
+
+    function createProductCard(product) {
+      const fullName = `${product.modelo} ${product.capacidad}`;
+      const priceARS = product.precioUSD * config.dolar;
+      const card = document.createElement('article');
+      card.className = 'card';
+
+      const imageContainer = document.createElement('div');
+      imageContainer.className = 'card-image';
+      const image = document.createElement('img');
+      image.src = product.imagen || PLACEHOLDER_IMAGE;
+      image.alt = fullName;
+      image.loading = 'lazy';
+      image.addEventListener('error', () => {
+        if (image.src !== PLACEHOLDER_IMAGE) image.src = PLACEHOLDER_IMAGE;
+      }, { once: true });
+      imageContainer.append(image);
+
+      const body = document.createElement('div');
+      body.className = 'card-body';
+      appendTextElement(body, 'h2', 'card-title', fullName);
+      appendTextElement(body, 'div', 'price-usd', formatUSD(product.precioUSD));
+      appendTextElement(body, 'div', 'price-ars', `Efectivo / transferencia: ${formatARS(priceARS)}`);
+
+      const installmentsBox = document.createElement('section');
+      installmentsBox.className = 'installments';
+      appendTextElement(installmentsBox, 'h4', '', 'Cuotas fijas en pesos');
+      INSTALLMENTS.forEach((term) => {
+        const financedTotal = priceARS * (1 + config.recargos[term] / 100);
+        const row = document.createElement('div');
+        row.className = 'installment';
+        appendTextElement(row, 'span', '', `${term} cuotas de`);
+        appendTextElement(row, 'strong', '', formatARS(financedTotal / term));
+        installmentsBox.append(row);
+      });
+      body.append(installmentsBox);
+
+      const actions = document.createElement('div');
+      actions.className = 'actions';
+      const buyButton = document.createElement('button');
+      buyButton.className = 'button button-primary';
+      buyButton.type = 'button';
+      buyButton.textContent = 'Comprar directo';
+      buyButton.addEventListener('click', () => buyDirect(fullName, product.precioUSD, priceARS));
+
+      const tradeInButton = document.createElement('button');
+      tradeInButton.className = 'button button-secondary';
+      tradeInButton.type = 'button';
+      tradeInButton.textContent = 'Plan Canje';
+      tradeInButton.addEventListener('click', () => openCanjeModal(fullName));
+      actions.append(buyButton, tradeInButton);
+      body.append(actions);
+      card.append(imageContainer, body);
+      return card;
+    }
+
+    function renderProducts(products) {
+      catalog.replaceChildren();
+      if (!products.length) {
+        setStatus('Por el momento no hay equipos con stock disponible.');
+        return;
+      }
+      products.forEach((product) => catalog.append(createProductCard(product)));
+    }
+
+    async function loadCatalog() {
+      if (typeof Papa === 'undefined') {
+        setStatus('No se pudo cargar el lector de datos. Actualizá la página e intentá nuevamente.', true);
+        return;
+      }
+
+      try {
+        // Descargar primero permite identificar permisos o respuestas HTTP inválidas.
+        const response = await fetch(CSV_URL, { cache: 'no-store' });
+        if (!response.ok) {
+          throw new Error(`Google Sheets respondió con estado ${response.status}. Publicá la hoja para que cualquier persona con el enlace pueda verla.`);
+        }
+
+        const csvText = await response.text();
+        const results = Papa.parse(csvText, {
+          header: false,
+          skipEmptyLines: 'greedy'
+        });
+
+        if (results.errors.length) {
+          console.warn('Advertencias al interpretar el CSV:', results.errors);
+        }
+        if (!Array.isArray(results.data) || results.data.length < 1) {
+          throw new Error('La hoja no contiene datos.');
+        }
+
+        config = getConfiguration(results.data[0]);
+        renderProducts(getAvailableProducts(results.data));
+      } catch (error) {
+        console.error('Error al cargar el catálogo:', error);
+        const detail = error instanceof Error ? error.message : 'Error desconocido.';
+        setStatus(`No se pudo cargar el catálogo: ${detail}`, true);
+      }
+    }
+
+    function openWhatsApp(message) {
+      const url = `https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(message)}`;
+      window.open(url, '_blank', 'noopener,noreferrer');
+    }
+
+    function buyDirect(product, priceUSD, priceARS) {
+      const message = [
+        'Hola iPhone Style!',
+        `Me interesa comprar el *${product}*.`,
+        `Lo vi en la web a ${formatUSD(priceUSD)} (contado ${formatARS(priceARS)}).`,
+        '¿Podemos coordinar para acercarme a la sucursal?'
+      ].join('\n');
+      openWhatsApp(message);
+    }
+
+    function openCanjeModal(targetProduct) {
+      lastFocusedElement = document.activeElement;
+      selectedProductForCanje = targetProduct;
+      targetModelText.textContent = targetProduct;
+      canjeModal.classList.add('active');
+      canjeModal.setAttribute('aria-hidden', 'false');
+      document.body.style.overflow = 'hidden';
+      window.setTimeout(() => canjeModel.focus(), 50);
+    }
+
+    function closeModal() {
+      canjeModal.classList.remove('active');
+      canjeModal.setAttribute('aria-hidden', 'true');
+      document.body.style.overflow = '';
+      if (lastFocusedElement instanceof HTMLElement) lastFocusedElement.focus();
+    }
+
+    document.getElementById('closeModalButton').addEventListener('click', closeModal);
+    canjeModal.addEventListener('click', (event) => {
+      if (event.target === canjeModal) closeModal();
+    });
+    document.addEventListener('keydown', (event) => {
+      if (event.key === 'Escape' && canjeModal.classList.contains('active')) closeModal();
+    });
+
+    canjeForm.addEventListener('submit', (event) => {
+      event.preventDefault();
+      if (!canjeForm.reportValidity() || !selectedProductForCanje) return;
+
+      const model = normalizeCell(document.getElementById('canjeModel').value);
+      const capacity = document.getElementById('canjeGB').value;
+      const battery = document.getElementById('canjeBattery').value;
+      const condition = document.getElementById('canjeCondition').value;
+      const details = normalizeCell(document.getElementById('canjeDetails').value) || 'Sin detalles adicionales informados';
+
+      const message = [
+        'Hola iPhone Style!',
+        `Me interesa el *${selectedProductForCanje}*.`,
+        '',
+        '*PLAN CANJE — equipo a entregar*',
+        `📱 *Modelo:* ${model}`,
+        `💾 *Capacidad:* ${capacity}`,
+        `🔋 *Batería:* ${battery}%`,
+        `✨ *Estado:* ${condition}`,
+        `📝 *Detalles:* ${details}`,
+        '',
+        '¿Me pasarían la diferencia a abonar?'
+      ].join('\n');
+
+      openWhatsApp(message);
+      closeModal();
+      canjeForm.reset();
+    });
+
+    loadCatalog();
+  </script>
+</body>
+</html>
