@@ -77,7 +77,8 @@
       const usdIndex = headers.findIndex((header) => header === 'USD' || header.startsWith('USD '));
       if (modelIndex === -1 || usdIndex === -1) return;
 
-      const indices = { capacity: indexOf('GB'), color: indexOf('COLOR'), battery: indexOf('BATERIA'), details: indexOf('DETALLES'), cash: indexOf('PESOS'), transfer: indexOf('TRANSFERENCIA'), stock: indexOf('STOCK'), image: indexOf('IMAGEN') };
+      const imageIndex = headers.findIndex((header) => /(?:IMAGEN|IMAGE|FOTO|PHOTO|(?:URL|LINK).*(?:IMG|IMAGEN|IMAGE|FOTO|PHOTO))/.test(header));
+      const indices = { capacity: indexOf('GB'), color: indexOf('COLOR'), battery: indexOf('BATERIA'), details: indexOf('DETALLES'), cash: indexOf('PESOS'), transfer: indexOf('TRANSFERENCIA'), stock: indexOf('STOCK'), image: imageIndex };
       const section = sectionForHeader(rows, headerRow);
       for (let cursor = headerRow + 1; cursor < rows.length; cursor += 1) {
         const current = rows[cursor];
