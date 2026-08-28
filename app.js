@@ -1,288 +1,583 @@
-(() => {
-  'use strict';
+const WHATSAPP_NUMBER = "5493476658161";
 
-  const CSV_URL = 'https://docs.google.com/spreadsheets/d/1A76HzLtPNQZq3cG-XgsqSTBLYRH7BusSB4MD2wA52OA/export?format=csv&gid=0';
-  const WHATSAPP_NUMBER = '5493476658161';
-  const INSTALLMENTS = [3, 6, 9, 12, 18];
-  const PLACEHOLDER_IMAGE = "data:image/svg+xml;charset=UTF-8,%3Csvg xmlns='http://www.w3.org/2000/svg' width='480' height='480' viewBox='0 0 480 480'%3E%3Crect width='480' height='480' fill='%231b1b1d'/%3E%3Crect x='158' y='70' width='164' height='340' rx='30' fill='none' stroke='%2386868b' stroke-width='10'/%3E%3Ccircle cx='240' cy='378' r='8' fill='%2386868b'/%3E%3C/svg%3E";
+const fallbackCatalog = [
+  { category: "Usado premium", name: "iPhone 13", storage: "128 GB", color: "Midnight", battery: "84%", transfer: "$553.316", installment: "$250.837", image: "https://iphone-style-ar.github.io/iPhone-Style/img/IMG_5174.jpeg" },
+  { category: "Usado premium", name: "iPhone 13", storage: "128 GB", color: "Midnight", battery: "88%", transfer: "$569.590", installment: "$258.214", image: "https://iphone-style-ar.github.io/iPhone-Style/img/IMG_5174.jpeg" },
+  { category: "Usado premium", name: "iPhone 13", storage: "256 GB", color: "Red", battery: "100%", transfer: "$602.138", installment: "$272.969", image: "https://iphone-style-ar.github.io/iPhone-Style/img/IMG_5174.jpeg" },
+  { category: "Usado premium", name: "iPhone 15", storage: "128 GB", color: "Blue", battery: "84%", transfer: "$813.700", installment: "$368.877", image: "https://iphone-style-ar.github.io/iPhone-Style/img/IMG_5178.jpeg" },
+  { category: "Usado premium", name: "iPhone 15", storage: "128 GB", color: "Black", battery: "90%", transfer: "$846.248", installment: "$383.632", image: "https://iphone-style-ar.github.io/iPhone-Style/img/IMG_5178.jpeg" },
+  { category: "Usado premium", name: "iPhone 15 Pro", storage: "128 GB", color: "Black", battery: "86%", transfer: "$1.025.262", installment: "$464.785", image: "https://iphone-style-ar.github.io/iPhone-Style/img/IMG_5183.jpeg" },
+  { category: "Usado premium", name: "iPhone 15 Pro", storage: "128 GB", color: "White", battery: "87%", transfer: "$1.025.262", installment: "$464.785", image: "https://iphone-style-ar.github.io/iPhone-Style/img/IMG_5183.jpeg" },
+  { category: "Usado premium", name: "iPhone 15 Pro", storage: "128 GB", color: "Black", battery: "88%", transfer: "$1.025.262", installment: "$464.785", image: "https://iphone-style-ar.github.io/iPhone-Style/img/IMG_5183.jpeg" },
+  { category: "Usado premium", name: "iPhone 15 Pro", storage: "128 GB", color: "Black", battery: "91%", transfer: "$1.041.536", installment: "$472.163", image: "https://iphone-style-ar.github.io/iPhone-Style/img/IMG_5183.jpeg" },
+  { category: "Usado premium", name: "iPhone 15 Pro", storage: "128 GB", color: "Black", battery: "100%", transfer: "$1.074.084", installment: "$486.918", image: "https://iphone-style-ar.github.io/iPhone-Style/img/IMG_5183.jpeg" },
+  { category: "Usado premium", name: "iPhone 15 Pro Max", storage: "256 GB", color: "Black", battery: "100%", transfer: "$1.269.372", installment: "$575.449", image: "https://iphone-style-ar.github.io/iPhone-Style/img/IMG_5184.jpeg" },
+  { category: "Usado premium", name: "iPhone 16", storage: "128 GB", color: "Black", battery: "90%", transfer: "$1.074.084", installment: "$486.918", image: "https://iphone-style-ar.github.io/iPhone-Style/img/IMG_5185.jpeg" },
+  { category: "Usado premium", name: "iPhone 16", storage: "128 GB", color: "Black", battery: "93%", transfer: "$1.074.084", installment: "$486.918", image: "https://iphone-style-ar.github.io/iPhone-Style/img/IMG_5185.jpeg" },
+  { category: "Usado premium", name: "iPhone 16", storage: "128 GB", color: "Pink", battery: "93%", transfer: "$1.074.084", installment: "$486.918", image: "https://iphone-style-ar.github.io/iPhone-Style/img/IMG_5185.jpeg" },
+  { category: "Usado premium", name: "iPhone 16 Pro", storage: "128 GB", color: "White", battery: "91%", transfer: "$1.301.920", installment: "$590.204", image: "https://iphone-style-ar.github.io/iPhone-Style/img/IMG_5187.jpeg" },
+  { category: "Usado premium", name: "iPhone 16 Pro Max", storage: "256 GB", color: "Black", battery: "92%", transfer: "$1.497.208", installment: "$678.734", image: "https://iphone-style-ar.github.io/iPhone-Style/img/IMG_5189.jpeg" },
+  { category: "Outlet", name: "iPhone 13 Pro Max", storage: "128 GB", color: "Sierra Blue", battery: "68%", detail: "Sin Face ID", transfer: "$699.782", installment: "$317.235", image: "https://iphone-style-ar.github.io/iPhone-Style/img/IMG_5177.jpeg" },
+  { category: "Outlet", name: "iPhone 13 Pro Max", storage: "128 GB", color: "Alpine Green", battery: "76%", detail: "Cámara x0,5 no funciona", transfer: "$699.782", installment: "$317.235", image: "https://iphone-style-ar.github.io/iPhone-Style/img/IMG_5177.jpeg" },
+  { category: "Outlet", name: "iPhone 16 Pro", storage: "128 GB", color: "Natural", battery: "91%", detail: "Pantalla cambiada", transfer: "$1.139.180", installment: "$516.428", image: "https://iphone-style-ar.github.io/iPhone-Style/img/IMG_5187.jpeg" },
+];
 
-  const $ = (selector, scope = document) => scope.querySelector(selector);
-  const elements = {
-    catalog: $('#catalog'), preloader: $('#preloader'), modal: $('#canjeModal'), modalClose: $('#closeModal'),
-    tradeinForm: $('#tradeinForm'), targetProduct: $('#targetProduct'), currentYear: $('#currentYear'),
-    lightbox: $('#productLightbox'), lightboxClose: $('#closeLightbox'), lightboxImage: $('#lightboxImage'),
-    lightboxTitle: $('#lightboxTitle'), lightboxDescription: $('#lightboxDescription')
-  };
-  const state = { selectedProduct: '', lastFocus: null, lastLightboxFocus: null, selectedCard: null, dollarRate: 0 };
+// Valores sincronizados desde la planilla de inventario.
+const paymentDetails = [
+  { usd: "US$ 340", cash: "$537.200", installment6: "$134.640", installment9: "$97.138", installment12: "$82.536", installment18: "$59.943" },
+  { usd: "US$ 350", cash: "$553.000", installment6: "$138.600", installment9: "$99.995", installment12: "$84.964", installment18: "$61.706" },
+  { usd: "US$ 370", cash: "$584.600", installment6: "$146.520", installment9: "$105.709", installment12: "$89.819", installment18: "$65.232" },
+  { usd: "US$ 500", cash: "$790.000", installment6: "$198.000", installment9: "$142.850", installment12: "$121.377", installment18: "$88.151" },
+  { usd: "US$ 520", cash: "$821.600", installment6: "$205.920", installment9: "$148.564", installment12: "$126.232", installment18: "$91.677" },
+  { usd: "US$ 630", cash: "$995.400", installment6: "$249.480", installment9: "$179.990", installment12: "$152.935", installment18: "$111.070" },
+  { usd: "US$ 630", cash: "$995.400", installment6: "$249.480", installment9: "$179.990", installment12: "$152.935", installment18: "$111.070" },
+  { usd: "US$ 630", cash: "$995.400", installment6: "$249.480", installment9: "$179.990", installment12: "$152.935", installment18: "$111.070" },
+  { usd: "US$ 640", cash: "$1.011.200", installment6: "$253.440", installment9: "$182.847", installment12: "$155.362", installment18: "$112.833" },
+  { usd: "US$ 660", cash: "$1.042.800", installment6: "$261.360", installment9: "$188.561", installment12: "$160.218", installment18: "$116.359" },
+  { usd: "US$ 780", cash: "$1.232.400", installment6: "$308.881", installment9: "$222.845", installment12: "$189.348", installment18: "$137.515" },
+  { usd: "US$ 660", cash: "$1.042.800", installment6: "$261.360", installment9: "$188.561", installment12: "$160.218", installment18: "$116.359" },
+  { usd: "US$ 660", cash: "$1.042.800", installment6: "$261.360", installment9: "$188.561", installment12: "$160.218", installment18: "$116.359" },
+  { usd: "US$ 660", cash: "$1.042.800", installment6: "$261.360", installment9: "$188.561", installment12: "$160.218", installment18: "$116.359" },
+  { usd: "US$ 800", cash: "$1.264.000", installment6: "$316.801", installment9: "$228.559", installment12: "$194.203", installment18: "$141.041" },
+  { usd: "US$ 920", cash: "$1.453.600", installment6: "$364.321", installment9: "$262.843", installment12: "$223.334", installment18: "$162.198" },
+  { usd: "US$ 430", cash: "$679.400", installment6: "$170.280", installment9: "$122.851", installment12: "$104.384", installment18: "$75.810" },
+  { usd: "US$ 430", cash: "$679.400", installment6: "$170.280", installment9: "$122.851", installment12: "$104.384", installment18: "$75.810" },
+  { usd: "US$ 700", cash: "$1.106.000", installment6: "$277.200", installment9: "$199.989", installment12: "$169.928", installment18: "$123.411" },
+];
 
-  const normalize = (value = '') => String(value).replace(/^\uFEFF/, '').trim();
-  const headerKey = (value) => normalize(value).normalize('NFD').replace(/[\u0300-\u036f]/g, '').toUpperCase();
-  const textFromRow = (row) => row.map(normalize).filter(Boolean).join(' ');
-  const isBlankRow = (row) => !row.some((cell) => normalize(cell));
+fallbackCatalog.forEach((product, index) => Object.assign(product, paymentDetails[index]));
 
-  const parseNumber = (value) => {
-    const raw = normalize(value).replace(/\s/g, '').replace(/[^\d,.-]/g, '');
-    if (!raw) return Number.NaN;
-    const comma = raw.lastIndexOf(',');
-    const dot = raw.lastIndexOf('.');
-    let prepared = raw;
-    if (comma !== -1 && dot !== -1) prepared = comma > dot ? raw.replace(/\./g, '').replace(',', '.') : raw.replace(/,/g, '');
-    else if (comma !== -1) prepared = (raw.match(/,/g) || []).length > 1 || raw.length - comma - 1 === 3 ? raw.replace(/,/g, '') : raw.replace(',', '.');
-    else if (dot !== -1) prepared = (raw.match(/\./g) || []).length > 1 || raw.length - dot - 1 === 3 ? raw.replace(/\./g, '') : raw;
-    return Number(prepared);
-  };
+// Fuente de verdad del catálogo. Google Sheets publica este CSV al actualizar la planilla.
+const CATALOG_CSV_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vQomt3Xo_DZR7eqN9v1u6dshs5se0jl1BDyUwb0LFCBahX9DHDda2FqDj5t2sESNWDvwtQksAepJAuu/pub?gid=0&single=true&output=csv";
+const DEFAULT_PRODUCT_IMAGE = "logo-iph-style.png.PNG";
+const CATALOG_REFRESH_INTERVAL = 60_000;
+const CATALOG_REQUEST_TIMEOUT = 12_000;
+let catalog = fallbackCatalog.map((product) => ({ ...product }));
 
-  const formatARS = (value) => new Intl.NumberFormat('es-AR', { style: 'currency', currency: 'ARS', maximumFractionDigits: 0 }).format(value);
-  const formatUSD = (value) => new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD', maximumFractionDigits: 0 }).format(value);
-  const append = (parent, tag, className, text) => {
-    const node = document.createElement(tag);
-    if (className) node.className = className;
-    if (text !== undefined) node.textContent = text;
-    parent.append(node);
-    return node;
-  };
+const catalogCategories = [
+  {
+    id: "nuevos-sellados",
+    category: "Nuevo sellado",
+    eyebrow: "Estreno garantizado",
+    title: "Nuevos en caja sellada.",
+    description: "Equipos nuevos con un año de garantía oficial Apple.",
+    guarantee: "1 año de garantía oficial Apple",
+  },
+  {
+    id: "usados-premium",
+    category: "Usado premium",
+    eyebrow: "Selección verificada",
+    title: "Usados premium.",
+    description: "Equipos revisados, con batería informada y 90 días de garantía.",
+    guarantee: "90 días de garantía",
+  },
+  {
+    id: "outlet",
+    category: "Outlet",
+    eyebrow: "Oportunidades seleccionadas",
+    title: "Outlet.",
+    description: "Equipos con detalles específicos informados de forma clara y 30 días de garantía.",
+    guarantee: "30 días de garantía",
+  },
+];
 
-  const setCatalogStatus = (message) => {
-    elements.catalog.replaceChildren();
-    elements.catalog.setAttribute('aria-busy', 'false');
-    append(elements.catalog, 'p', 'catalog-status', message);
-  };
+const installmentOptions = [
+  { label: "3 cuotas", key: "installment" },
+  { label: "6 cuotas", key: "installment6" },
+  { label: "9 cuotas", key: "installment9" },
+  { label: "12 cuotas", key: "installment12" },
+  { label: "18 cuotas", key: "installment18" },
+];
 
-  const findDollarRate = (rows) => rows.reduce((rate, row) => {
-    if (rate) return rate;
-    const index = row.findIndex((cell) => headerKey(cell).includes('COTIZACION DOLAR'));
-    const value = index === -1 ? Number.NaN : parseNumber(row[index + 1]);
-    return Number.isFinite(value) && value > 0 ? value : 0;
-  }, 0);
+const prefersReducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+const catalogGroups = document.querySelector("#catalog-groups");
+const catalogStatus = document.querySelector("#catalog-status");
+let selectedTradeInProduct = null;
+let catalogFingerprint = "";
+let catalogRefreshInFlight = false;
 
-  const sectionForHeader = (rows, index) => {
-    let title = 'Equipos disponibles';
-    let warranty = '';
-    for (let cursor = index - 1; cursor >= Math.max(0, index - 5); cursor -= 1) {
-      const line = textFromRow(rows[cursor]);
-      const key = headerKey(line);
-      if (!warranty && (key.includes('GARANTIA') || key.includes('DIAS'))) warranty = line;
-      if (key.includes('IPHONES')) { title = line.replace(//g, '').trim(); break; }
+function escapeHtml(value = "") {
+  return String(value)
+    .replaceAll("&", "&amp;")
+    .replaceAll("<", "&lt;")
+    .replaceAll(">", "&gt;")
+    .replaceAll('"', "&quot;")
+    .replaceAll("'", "&#039;");
+}
+
+function normalizeHeader(value = "") {
+  return String(value)
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .replace(/[^a-zA-Z0-9]+/g, " ")
+    .trim()
+    .toUpperCase();
+}
+
+function parseCsv(text) {
+  const rows = [];
+  let row = [];
+  let cell = "";
+  let quoted = false;
+
+  for (let index = 0; index < text.length; index += 1) {
+    const char = text[index];
+    const next = text[index + 1];
+
+    if (char === '"' && quoted && next === '"') {
+      cell += '"';
+      index += 1;
+    } else if (char === '"') {
+      quoted = !quoted;
+    } else if (char === "," && !quoted) {
+      row.push(cell.trim());
+      cell = "";
+    } else if ((char === "\n" || char === "\r") && !quoted) {
+      if (char === "\r" && next === "\n") index += 1;
+      row.push(cell.trim());
+      if (row.some(Boolean)) rows.push(row);
+      row = [];
+      cell = "";
+    } else {
+      cell += char;
     }
-    return { title, warranty };
-  };
+  }
 
-  const parseCatalog = (rows) => {
-    state.dollarRate = findDollarRate(rows);
-    const products = [];
-    rows.forEach((row, headerRow) => {
-      const headers = row.map(headerKey);
-      const indexOf = (label) => headers.findIndex((header) => header.includes(label));
-      const modelIndex = indexOf('MODELO');
-      const usdIndex = headers.findIndex((header) => header === 'USD' || header.startsWith('USD '));
-      if (modelIndex === -1 || usdIndex === -1) return;
+  row.push(cell.trim());
+  if (row.some(Boolean)) rows.push(row);
+  return rows;
+}
 
-      const imageIndex = headers.findIndex((header) => /(?:IMAGEN|IMAGE|FOTO|PHOTO|(?:URL|LINK).*(?:IMG|IMAGEN|IMAGE|FOTO|PHOTO))/.test(header));
-      const indices = { capacity: indexOf('GB'), color: indexOf('COLOR'), battery: indexOf('BATERIA'), details: indexOf('DETALLES'), cash: indexOf('PESOS'), transfer: indexOf('TRANSFERENCIA'), stock: indexOf('STOCK'), image: imageIndex };
-      const section = sectionForHeader(rows, headerRow);
-      for (let cursor = headerRow + 1; cursor < rows.length; cursor += 1) {
-        const current = rows[cursor];
-        if (isBlankRow(current)) break;
-        const candidateHeaders = current.map(headerKey);
-        if (candidateHeaders.some((cell) => cell.includes('MODELO')) && candidateHeaders.some((cell) => cell === 'USD' || cell.startsWith('USD '))) break;
+function sheetCategory(row) {
+  const text = normalizeHeader(row.join(" "));
+  if (text.includes("NUEVOS EN CAJA")) return "Nuevo sellado";
+  if (text.includes("USADOS PREMIUM")) return "Usado premium";
+  if (text.includes("OUTLET")) return "Outlet";
+  return null;
+}
 
-        const model = normalize(current[modelIndex]);
-        const usd = parseNumber(current[usdIndex]);
-        const stock = indices.stock === -1 ? null : parseNumber(current[indices.stock]);
-        if (!model || !Number.isFinite(usd) || usd <= 0 || (stock !== null && stock <= 0)) continue;
+function sheetValue(row, headers, name) {
+  const index = headers.indexOf(name);
+  return index >= 0 ? row[index]?.trim() || "" : "";
+}
 
-        const installments = INSTALLMENTS.reduce((list, term) => {
-          const column = headers.findIndex((header) => header.includes(`${term} CUOTAS`));
-          const value = column === -1 ? Number.NaN : parseNumber(current[column]);
-          return Number.isFinite(value) && value > 0 ? { ...list, [term]: value } : list;
-        }, {});
-        const capacityRaw = indices.capacity === -1 ? '' : normalize(current[indices.capacity]);
-        const capacity = capacityRaw && !/(GB|TB)$/i.test(capacityRaw) ? `${capacityRaw} GB` : capacityRaw;
-        const color = indices.color === -1 ? '' : normalize(current[indices.color]);
-        products.push({ section, model, capacity, color, battery: indices.battery === -1 ? '' : normalize(current[indices.battery]), details: indices.details === -1 ? '' : normalize(current[indices.details]), usd, cash: indices.cash === -1 ? Number.NaN : parseNumber(current[indices.cash]), transfer: indices.transfer === -1 ? Number.NaN : parseNumber(current[indices.transfer]), installments, image: indices.image === -1 ? '' : normalize(current[indices.image]) });
-      }
-    });
-    return products;
-  };
+function displayPrice(value) {
+  const cleanValue = String(value || "").trim();
+  if (!cleanValue) return "A consultar";
+  return cleanValue.startsWith("$") ? cleanValue : `$${cleanValue}`;
+}
 
-  const getDriveImageUrl = (value) => {
-    const source = normalize(value);
-    if (!source) return '';
-    const driveId = source.match(/(?:\/d\/|[?&]id=)([-\w]{20,})/i)?.[1];
-    // Las URLs de vista compartida de Drive devuelven una página HTML; esta URL entrega la imagen directamente.
-    return driveId ? `https://drive.google.com/thumbnail?id=${driveId}&sz=w1600` : source;
-  };
+function safeImageUrl(value) {
+  const image = String(value || "").trim();
+  if (!image) return DEFAULT_PRODUCT_IMAGE;
 
-  const getProductImage = ({ image }) => getDriveImageUrl(image) || PLACEHOLDER_IMAGE;
+  try {
+    const url = new URL(image);
+    return ["https:", "http:"].includes(url.protocol) ? url.href : DEFAULT_PRODUCT_IMAGE;
+  } catch {
+    return DEFAULT_PRODUCT_IMAGE;
+  }
+}
 
-  const buildImage = (product) => {
-    const element = document.createElement('img');
-    element.src = getProductImage(product);
-    element.alt = product.model;
-    element.loading = 'lazy';
-    element.decoding = 'async';
-    element.addEventListener('error', () => { if (element.src !== PLACEHOLDER_IMAGE) element.src = PLACEHOLDER_IMAGE; }, { once: true });
-    return element;
-  };
+function parseCatalogSheet(csv) {
+  const rows = parseCsv(csv);
+  let category = null;
+  let headers = [];
+  const products = [];
 
-  const createCard = (product) => {
-    const { model, capacity, color, battery, details, usd, cash, transfer, installments } = product;
-    const name = [model, capacity].filter(Boolean).join(' · ');
-    const cashPrice = Number.isFinite(cash) ? cash : usd * state.dollarRate;
-    const card = document.createElement('article');
-    card.className = 'product-card';
-    const imageBox = append(card, 'button', 'product-card__image');
-    imageBox.type = 'button';
-    imageBox.setAttribute('aria-label', `Ampliar foto de ${name}`);
-    imageBox.append(buildImage(product));
-    imageBox.addEventListener('click', () => openLightbox(product, imageBox.querySelector('img')));
-    const body = append(card, 'div', 'product-card__body');
-    append(body, 'h3', 'product-card__title', name);
-    const meta = [color && `Color: ${color}`, battery && `Batería: ${battery}`, details && `Detalle: ${details}`].filter(Boolean).join(' · ');
-    append(body, 'p', 'product-card__meta', meta);
-    append(body, 'div', 'price-usd', `Precio en USD: ${formatUSD(usd)}`);
-    const arsLine = [`Efectivo: ${formatARS(cashPrice)}`, Number.isFinite(transfer) && `Transferencia: ${formatARS(transfer)}`].filter(Boolean).join(' · ');
-    append(body, 'p', 'price-ars', arsLine);
-    const benefit = append(body, 'div', 'benefit-box');
-    append(benefit, 'span', '', '🎁');
-    const benefitText = append(benefit, 'span');
-    append(benefitText, 'strong', '', 'Con tu compra te regalamos');
-    benefitText.append(document.createElement('br'), document.createTextNode('Cargador rápido + cable + funda + vidrio templado + garantía.'));
-    const plans = append(body, 'section', 'installments');
-    append(plans, 'h4', '', 'Cuotas fijas en pesos');
-    INSTALLMENTS.forEach((term) => {
-      const perInstallment = installments[term] || cashPrice / term;
-      const row = append(plans, 'div', 'installment');
-      append(row, 'span', '', `${term} cuotas de`);
-      append(row, 'strong', '', formatARS(perInstallment));
-    });
-    const actions = append(body, 'div', 'card-actions');
-    const buy = append(actions, 'button', 'button button--primary', 'Comprar');
-    buy.type = 'button';
-    buy.addEventListener('click', () => openWhatsApp([`Hola iPhone Style!`, `Me interesa comprar el *${name}*.`, `Lo vi en la web a ${formatUSD(usd)} (efectivo ${formatARS(cashPrice)}).`, '¿Podemos coordinar?'].join('\n')));
-    const tradein = append(actions, 'button', 'button button--secondary', 'Plan Canje');
-    tradein.type = 'button';
-    tradein.addEventListener('click', () => openModal(name, card));
-    card.addEventListener('click', ({ target }) => {
-      if (target.closest('button, a')) return;
-      openLightbox(product, imageBox.querySelector('img'));
-    });
-    return card;
-  };
-
-  const renderCatalog = (products) => {
-    elements.catalog.replaceChildren();
-    elements.catalog.setAttribute('aria-busy', 'false');
-    if (!products.length) return setCatalogStatus('Por el momento no hay equipos disponibles.');
-    let currentSection = '';
-    products.forEach((product) => {
-      const { title, warranty } = product.section;
-      if (title !== currentSection) {
-        currentSection = title;
-        append(elements.catalog, 'h3', 'catalog-section-title', title);
-        if (warranty) append(elements.catalog, 'p', 'catalog-section-subtitle', warranty);
-      }
-      elements.catalog.append(createCard(product));
-    });
-  };
-
-  const openWhatsApp = (message) => window.open(`https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(message)}`, '_blank', 'noopener,noreferrer');
-  const openLightbox = (product, image) => {
-    const { model, capacity } = product;
-    const productName = [model, capacity].filter(Boolean).join(' · ');
-    state.lastLightboxFocus = document.activeElement;
-    elements.lightboxTitle.textContent = productName;
-    elements.lightboxDescription.textContent = 'Con la compra de cualquier equipo te llevás un cargador de carga rápida + cable + funda + vidrio templado + una GARANTÍA de regalo. 🎁 Compra seguro y tranquilo en iPhone Style.';
-    elements.lightboxImage.src = image.currentSrc || image.src || PLACEHOLDER_IMAGE;
-    elements.lightboxImage.alt = `Vista ampliada de ${productName}`;
-    elements.lightbox.classList.add('is-open');
-    elements.lightbox.setAttribute('aria-hidden', 'false');
-    document.body.classList.add('modal-open');
-    elements.lightboxClose.focus();
-  };
-  const closeLightbox = () => {
-    elements.lightbox.classList.remove('is-open');
-    elements.lightbox.setAttribute('aria-hidden', 'true');
-    document.body.classList.remove('modal-open');
-    state.lastLightboxFocus?.focus();
-  };
-  const openModal = (productName, card) => {
-    state.selectedProduct = productName;
-    state.lastFocus = document.activeElement;
-    state.selectedCard?.classList.remove('is-selected');
-    state.selectedCard = card;
-    card.classList.add('is-selected');
-    window.setTimeout(() => {
-      elements.targetProduct.textContent = productName;
-      elements.modal.classList.add('is-open');
-      elements.modal.setAttribute('aria-hidden', 'false');
-      document.body.classList.add('modal-open');
-      $('#tradeinModel').focus();
-    }, 150);
-  };
-  const closeModal = () => {
-    elements.modal.classList.remove('is-open');
-    elements.modal.setAttribute('aria-hidden', 'true');
-    document.body.classList.remove('modal-open');
-    state.selectedCard?.classList.remove('is-selected');
-    state.lastFocus?.focus();
-  };
-
-  const handleTradeinSubmit = (event) => {
-    event.preventDefault();
-    if (!elements.tradeinForm.reportValidity() || !state.selectedProduct) return;
-    const { model, capacity, battery, condition, details } = Object.fromEntries(new FormData(elements.tradeinForm));
-    const message = ['Hola iPhone Style!', `Me interesa el *${state.selectedProduct}*.`, '', '*PLAN CANJE — equipo a entregar*', `📱 *Modelo:* ${normalize(model)}`, `💾 *Capacidad:* ${capacity}`, `🔋 *Batería:* ${battery}%`, `✨ *Estado:* ${condition}`, `📝 *Detalles:* ${normalize(details) || 'Sin detalles adicionales informados'}`, '', '¿Me pasarían la diferencia a abonar?'].join('\n');
-    openWhatsApp(message);
-    elements.tradeinForm.reset();
-    closeModal();
-  };
-
-  const trapModalFocus = (event) => {
-    const activeLayer = elements.lightbox.classList.contains('is-open') ? elements.lightbox : elements.modal;
-    const isOpen = activeLayer.classList.contains('is-open');
-    if (event.key === 'Escape' && isOpen) return activeLayer === elements.lightbox ? closeLightbox() : closeModal();
-    if (event.key !== 'Tab' || !isOpen) return;
-    const focusable = [...activeLayer.querySelectorAll('button, input, select, textarea, [href]')].filter((node) => !node.disabled);
-    const [first] = focusable; const last = focusable.at(-1);
-    if (event.shiftKey && document.activeElement === first) { event.preventDefault(); last.focus(); }
-    if (!event.shiftKey && document.activeElement === last) { event.preventDefault(); first.focus(); }
-  };
-
-  const loadCatalog = async () => {
-    if (!window.Papa) return setCatalogStatus('No se pudo cargar el lector del catálogo. Actualizá la página e intentá nuevamente.');
-    try {
-      const response = await fetch(CSV_URL, { cache: 'no-store' });
-      if (!response.ok) throw new Error(`Google Sheets respondió con estado ${response.status}.`);
-      const csv = await response.text();
-      const { data, errors } = window.Papa.parse(csv, { header: false, skipEmptyLines: 'greedy' });
-      if (errors.length) console.warn('Advertencias al leer el CSV:', errors);
-      renderCatalog(parseCatalog(data));
-    } catch (error) {
-      console.error('No se pudo cargar el catálogo:', error);
-      setCatalogStatus('No pudimos actualizar el catálogo. Probá nuevamente en unos instantes.');
+  rows.forEach((row) => {
+    const categoryFromRow = sheetCategory(row);
+    if (categoryFromRow) {
+      category = categoryFromRow;
+      headers = [];
+      return;
     }
-  };
 
-  const configureBrandFallbacks = () => document.querySelectorAll('.brand-logo').forEach((logo) => {
-    const showFallback = () => { logo.hidden = true; logo.nextElementSibling.hidden = false; };
-    logo.addEventListener('error', showFallback, { once: true });
-    if (logo.complete && !logo.naturalWidth) showFallback();
+    const normalizedRow = row.map(normalizeHeader);
+    if (normalizedRow.includes("IMAGEN") && normalizedRow.includes("MODELO")) {
+      headers = normalizedRow;
+      return;
+    }
+
+    if (!category || !headers.length) return;
+    const name = sheetValue(row, headers, "MODELO");
+    if (!name) return;
+
+    const storage = sheetValue(row, headers, "GB");
+    products.push({
+      category,
+      name,
+      storage: storage ? `${storage} GB` : "Capacidad a confirmar",
+      color: sheetValue(row, headers, "COLOR") || "Color a confirmar",
+      battery: sheetValue(row, headers, "BATERIA"),
+      detail: sheetValue(row, headers, "DETALLES"),
+      image: safeImageUrl(sheetValue(row, headers, "IMAGEN")),
+      usd: displayPrice(sheetValue(row, headers, "USD")),
+      cash: displayPrice(sheetValue(row, headers, "PESOS")),
+      transfer: displayPrice(sheetValue(row, headers, "TRANSFERENCIA")),
+      installment: displayPrice(sheetValue(row, headers, "3 CUOTAS FIJAS")),
+      installment6: displayPrice(sheetValue(row, headers, "6 CUOTAS FIJAS")),
+      installment9: displayPrice(sheetValue(row, headers, "9 CUOTAS FIJAS")),
+      installment12: displayPrice(sheetValue(row, headers, "12 CUOTAS FIJAS")),
+      installment18: displayPrice(sheetValue(row, headers, "18 CUOTAS FIJAS")),
+    });
   });
 
-  const init = () => {
-    elements.currentYear.textContent = new Date().getFullYear();
-    configureBrandFallbacks();
-    elements.modalClose.addEventListener('click', closeModal);
-    elements.modal.addEventListener('click', ({ target }) => { if (target === elements.modal) closeModal(); });
-    elements.lightboxClose.addEventListener('click', closeLightbox);
-    elements.lightbox.addEventListener('click', ({ target }) => { if (target === elements.lightbox) closeLightbox(); });
-    elements.lightboxImage.addEventListener('error', () => { elements.lightboxImage.src = PLACEHOLDER_IMAGE; }, { once: true });
-    elements.tradeinForm.addEventListener('submit', handleTradeinSubmit);
-    document.addEventListener('keydown', trapModalFocus);
-    loadCatalog();
+  return products;
+}
+
+function productMeta(product) {
+  const items = [product.color];
+  if (product.battery) items.push(`Batería: ${product.battery}`);
+  if (product.detail) items.push(product.detail);
+  return items.filter(Boolean).join(" · ");
+}
+
+function whatsappUrl(message) {
+  return `https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(message)}`;
+}
+
+function productDescription(product) {
+  return `${product.name} · ${product.storage} · ${productMeta(product)}`;
+}
+
+function buyMessage(product) {
+  const pricing = product.usd === "A consultar" || product.cash === "A consultar"
+    ? "Quisiera confirmar el precio y la disponibilidad."
+    : `Lo vi en la web a ${formatUsdPrice(product.usd)} USD (efectivo ${product.cash}).`;
+  return `Hola iPhone Style!\nMe interesa comprar el ${product.name} · ${product.storage}.\n${pricing}\n¡Quiero coordinar una cita en alguna de sus sucursales! ✨`;
+}
+
+function formatUsdPrice(value) {
+  return String(value || "A consultar").replace("US$", "$").replace(/\s+/g, " ").trim();
+}
+
+function priceTile(label, value, variant = "") {
+  return `<div class="price-tile ${variant}"><span>${label}</span><strong>${value}</strong></div>`;
+}
+
+function installmentTile(label, value) {
+  return `<div class="installment-tile"><span>${label}</span><strong>${value}</strong><small>por cuota</small></div>`;
+}
+
+function productMarkup(product, index) {
+  const installments = installmentOptions
+    .map(({ label, key }) => `<div class="installment-row"><span>${label} de</span><strong>${escapeHtml(product[key])}</strong></div>`)
+    .join("");
+
+  return `
+    <article class="product-card" data-reveal data-product-index="${index}" style="--reveal-delay: ${(index % 3) * 55}ms">
+      <button class="product-detail-trigger" type="button" data-select-product="${index}" aria-label="Ver ficha de ${escapeHtml(product.name)} ${escapeHtml(product.storage)}"></button>
+      <div class="product-card-top">
+        <div><h3>${escapeHtml(product.name)} · ${escapeHtml(product.storage)}</h3><p>${escapeHtml(productMeta(product))}</p></div>
+      </div>
+      <div class="product-visual">
+        <img class="product-image" src="${escapeHtml(product.image)}" alt="${escapeHtml(`${product.name} ${product.color} de ${product.storage}`)}" loading="lazy" decoding="async" />
+      </div>
+      <div class="product-pricing" aria-label="Precios de ${escapeHtml(product.name)}">
+        <p class="product-usd-price">Precio en USD: <strong>${escapeHtml(formatUsdPrice(product.usd))}</strong></p>
+        <p class="product-payment-copy">Efectivo: ${escapeHtml(product.cash)} · Transferencia: ${escapeHtml(product.transfer)}</p>
+        <div class="product-gift" aria-label="Regalo incluido con la compra">
+          <span aria-hidden="true">🎁</span>
+          <p><strong>Con tu compra te regalamos</strong>Cargador rápido + cable + funda + vidrio templado + garantía.</p>
+        </div>
+        <div class="installment-panel">
+          <p class="installment-heading">Cuotas fijas en pesos</p>
+          <div class="installment-rows">${installments}</div>
+        </div>
+      </div>
+      <div class="product-footer">
+        <a class="product-buy" href="${whatsappUrl(buyMessage(product))}" target="_blank" rel="noreferrer" aria-label="Comprar ${escapeHtml(product.name)} ${escapeHtml(product.storage)}">Comprar</a>
+        <button class="product-trade-in" type="button" data-trade-in-product="${index}">Plan Canje</button>
+      </div>
+    </article>`;
+}
+
+function catalogGroupMarkup(group) {
+  const products = catalog
+    .map((product, index) => ({ product, index }))
+    .filter(({ product }) => product.category === group.category);
+
+  if (!products.length) return "";
+
+  return `
+    <section class="catalog-group" id="${group.id}" aria-labelledby="${group.id}-title">
+      <div class="catalog-group-heading" data-reveal>
+        <div>
+          <p class="eyebrow">${group.eyebrow}</p>
+          <h3 id="${group.id}-title">${group.title}</h3>
+        </div>
+        <p>${group.description}</p>
+      </div>
+      <div class="catalog-grid">
+        ${products.map(({ product, index }) => productMarkup(product, index)).join("")}
+      </div>
+    </section>`;
+}
+
+async function fetchLiveCatalog() {
+  const controller = new AbortController();
+  const timeoutId = window.setTimeout(() => controller.abort(), CATALOG_REQUEST_TIMEOUT);
+  const requestUrl = new URL(CATALOG_CSV_URL);
+
+  // Evita que el navegador reutilice una respuesta antigua entre actualizaciones.
+  requestUrl.searchParams.set("_", String(Date.now()));
+
+  try {
+    const response = await fetch(requestUrl, { cache: "no-store", signal: controller.signal });
+    if (!response.ok) throw new Error(`Google Sheets respondió ${response.status}`);
+
+    const liveCatalog = parseCatalogSheet(await response.text());
+    if (!liveCatalog.length) throw new Error("La planilla no devolvió equipos");
+    return liveCatalog;
+  } finally {
+    window.clearTimeout(timeoutId);
+  }
+}
+
+async function loadCatalog() {
+  if (catalogRefreshInFlight) return;
+  catalogRefreshInFlight = true;
+  let source = "la planilla en vivo";
+  let nextCatalog;
+
+  try {
+    nextCatalog = await fetchLiveCatalog();
+  } catch (error) {
+    // Si la página ya mostró datos válidos, nunca los reemplazamos por una copia
+    // antigua durante un error temporal de red.
+    if (catalogFingerprint) {
+      console.warn("No se pudo actualizar el catálogo desde Google Sheets.", error);
+      return;
+    }
+    nextCatalog = fallbackCatalog.map((product) => ({ ...product }));
+    source = "la última copia disponible";
+    console.warn("No se pudo actualizar el catálogo desde Google Sheets.", error);
+  } finally {
+    catalogRefreshInFlight = false;
+  }
+
+  const nextFingerprint = JSON.stringify(nextCatalog);
+  if (nextFingerprint === catalogFingerprint) return;
+  catalogFingerprint = nextFingerprint;
+  catalog = nextCatalog;
+
+  catalogGroups.innerHTML = catalogCategories.map(catalogGroupMarkup).join("");
+  catalogGroups.setAttribute("aria-busy", "false");
+  catalogStatus.classList.add("is-ready");
+  const counts = catalogCategories
+    .map(({ category, title }) => {
+      const total = catalog.filter((product) => product.category === category).length;
+      return total ? `${total} ${title.replace(".", "").toLowerCase()}` : "";
+    })
+    .filter(Boolean)
+    .join(" · ");
+  catalogStatus.textContent = `${counts}. Datos cargados desde ${source}. Actualización automática activa.`;
+  observeReveals(catalogGroups.querySelectorAll("[data-reveal]"));
+}
+
+function observeReveals(elements = document.querySelectorAll("[data-reveal]")) {
+  if (prefersReducedMotion || !("IntersectionObserver" in window)) {
+    elements.forEach((element) => element.classList.add("is-revealed"));
+    return;
+  }
+
+  const observer = new IntersectionObserver(
+    (entries, activeObserver) => {
+      entries.forEach((entry) => {
+        if (!entry.isIntersecting) return;
+        entry.target.classList.add("is-revealed");
+        activeObserver.unobserve(entry.target);
+      });
+    },
+    { threshold: 0.12, rootMargin: "0px 0px -48px" },
+  );
+  elements.forEach((element) => observer.observe(element));
+}
+
+function openModal(dialog) {
+  if (!dialog || dialog.open) return;
+  dialog.showModal();
+  requestAnimationFrame(() => dialog.classList.add("is-open"));
+  dialog.querySelector("[data-close-modal]")?.focus();
+}
+
+function closeModal(dialog) {
+  if (!dialog?.open) return;
+  dialog.classList.remove("is-open");
+  dialog.classList.add("is-closing");
+
+  const finish = () => {
+    dialog.classList.remove("is-closing");
+    dialog.close();
   };
 
-  window.addEventListener('load', () => elements.preloader.classList.add('is-hidden'), { once: true });
-  document.addEventListener('DOMContentLoaded', init, { once: true });
-})();
+  if (prefersReducedMotion) {
+    finish();
+  } else {
+    window.setTimeout(finish, 250);
+  }
+}
+
+function prepareTradeIn(product = null) {
+  selectedTradeInProduct = product;
+  const form = document.querySelector("#trade-in-form");
+  const target = document.querySelector("#trade-in-target");
+  form.reset();
+  form.elements.storage.value = "128 GB";
+
+  if (product) {
+    target.textContent = `Querés llevarte un ${product.name} · ${product.storage}. Contanos sobre el tuyo y cotizamos la diferencia.`;
+  } else {
+    target.textContent = "Contanos sobre el equipo que entregás y te cotizamos la diferencia.";
+  }
+}
+
+function openTradeIn(product = null) {
+  const dialog = document.querySelector("#trade-in-dialog");
+  prepareTradeIn(product);
+
+  const revealForm = () => {
+    openModal(dialog);
+    window.requestAnimationFrame(() => document.querySelector("#trade-in-model")?.focus());
+  };
+  const activeDialog = document.querySelector("dialog.modal[open]");
+
+  if (activeDialog && activeDialog !== dialog) {
+    closeModal(activeDialog);
+    window.setTimeout(revealForm, prefersReducedMotion ? 0 : 260);
+    return;
+  }
+
+  revealForm();
+}
+
+function setupTradeInForm() {
+  const form = document.querySelector("#trade-in-form");
+  if (!form) return;
+
+  form.addEventListener("submit", (event) => {
+    event.preventDefault();
+    const values = new FormData(form);
+    const details = values.get("details").trim() || "Sin detalles adicionales informados";
+    const desiredProduct = selectedTradeInProduct
+      ? `Me interesa el ${selectedTradeInProduct.name} · ${selectedTradeInProduct.storage}.`
+      : "Me interesa hacer un Plan Canje.";
+    const message = `Hola iPhone Style!\n${desiredProduct}\n\nPLAN CANJE — equipo a entregar\n📱 Modelo: ${values.get("model")}\n💾 Capacidad: ${values.get("storage")}\n🔋 Batería: ${values.get("battery")}%\n✨ Estado: ${values.get("condition")}\n📝 Detalles: ${details}\n\n¿Me pasarían la diferencia a abonar?`;
+    window.open(whatsappUrl(message), "_blank", "noopener");
+  });
+}
+
+function setupModals() {
+  document.querySelectorAll("[data-open-modal]").forEach((trigger) => {
+    trigger.addEventListener("click", () => {
+      if (trigger.dataset.openModal === "trade-in-dialog") {
+        openTradeIn();
+        return;
+      }
+      openModal(document.querySelector(`#${trigger.dataset.openModal}`));
+    });
+  });
+
+  document.querySelectorAll("dialog").forEach((dialog) => {
+    dialog.addEventListener("click", (event) => {
+      if (event.target === dialog) closeModal(dialog);
+    });
+    dialog.addEventListener("cancel", (event) => {
+      event.preventDefault();
+      closeModal(dialog);
+    });
+  });
+
+  document.querySelectorAll("[data-close-modal]").forEach((button) => {
+    button.addEventListener("click", () => closeModal(button.closest("dialog")));
+  });
+
+  document.querySelector("#product-trade-in")?.addEventListener("click", () => {
+    if (selectedTradeInProduct) openTradeIn(selectedTradeInProduct);
+  });
+}
+
+function showProduct(product) {
+  const dialog = document.querySelector("#product-dialog");
+  selectedTradeInProduct = product;
+  dialog.querySelector("#product-dialog-title").textContent = `${product.name} · ${product.storage}`;
+  dialog.querySelector("#product-dialog-copy").textContent = "Con la compra de cualquier equipo te llevás un cargador de carga rápida + cable + funda + vidrio templado + una garantía de regalo. 🎁 Compra seguro y tranquilo en iPhone Style.";
+  dialog.querySelector("#product-modal-visual").innerHTML = `<img class="product-image" src="${escapeHtml(product.image)}" alt="${escapeHtml(`${product.name} ${product.color} de ${product.storage}`)}" />`;
+  openModal(dialog);
+}
+
+function setupCatalogEvents() {
+  catalogGroups.addEventListener("click", (event) => {
+    const tradeInButton = event.target.closest("[data-trade-in-product]");
+    if (tradeInButton) {
+      openTradeIn(catalog[Number(tradeInButton.dataset.tradeInProduct)]);
+      return;
+    }
+
+    const button = event.target.closest("[data-select-product]");
+    if (!button) return;
+    showProduct(catalog[Number(button.dataset.selectProduct)]);
+  });
+}
+
+function setupMagneticButtons() {
+  const canHover = window.matchMedia("(hover: hover) and (pointer: fine)").matches;
+  if (!canHover || prefersReducedMotion) return;
+
+  document.querySelectorAll("[data-magnetic]").forEach((button) => {
+    button.addEventListener("pointermove", (event) => {
+      const bounds = button.getBoundingClientRect();
+      const x = ((event.clientX - bounds.left) / bounds.width - 0.5) * 8;
+      const y = ((event.clientY - bounds.top) / bounds.height - 0.5) * 8;
+      button.style.transform = `translate3d(${x}px, ${y}px, 0)`;
+    });
+    button.addEventListener("pointerleave", () => {
+      button.style.transform = "translate3d(0, 0, 0)";
+    });
+  });
+}
+
+function setupNavigation() {
+  const toggle = document.querySelector(".nav-toggle");
+  const links = document.querySelector(".nav-links");
+  if (!toggle || !links) return;
+
+  toggle.addEventListener("click", () => {
+    const isOpen = toggle.getAttribute("aria-expanded") === "true";
+    toggle.setAttribute("aria-expanded", String(!isOpen));
+    toggle.setAttribute("aria-label", isOpen ? "Abrir menú" : "Cerrar menú");
+    links.classList.toggle("is-open", !isOpen);
+  });
+
+  links.querySelectorAll("a, button").forEach((item) => item.addEventListener("click", () => {
+    toggle.setAttribute("aria-expanded", "false");
+    toggle.setAttribute("aria-label", "Abrir menú");
+    links.classList.remove("is-open");
+  }));
+}
+
+function dismissLoader() {
+  const loader = document.querySelector("#site-loader");
+  if (!loader) return;
+  window.setTimeout(() => loader.classList.add("is-leaving"), prefersReducedMotion ? 0 : 380);
+}
+
+window.addEventListener("DOMContentLoaded", () => {
+  document.querySelector("#current-year").textContent = new Date().getFullYear();
+  document.querySelectorAll("[data-whatsapp]").forEach((link) => {
+    link.href = whatsappUrl(link.dataset.whatsapp);
+  });
+  observeReveals();
+  setupModals();
+  setupTradeInForm();
+  setupCatalogEvents();
+  setupMagneticButtons();
+  setupNavigation();
+  loadCatalog();
+  window.setInterval(() => {
+    if (!document.hidden) loadCatalog();
+  }, CATALOG_REFRESH_INTERVAL);
+});
+
+window.addEventListener("load", dismissLoader, { once: true });

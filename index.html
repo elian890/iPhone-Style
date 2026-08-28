@@ -1,118 +1,259 @@
 <!doctype html>
-<html lang="es">
-<head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="theme-color" content="#b70818">
-  <meta name="description" content="Catálogo premium de iPhone Style. Equipos Apple, cuotas fijas y Plan Canje.">
-  <title>iPhone Style | Experiencia Premium</title>
-  <link rel="stylesheet" href="styles.css">
-</head>
-<body>
-  <div id="preloader" class="preloader" role="status" aria-live="polite" aria-label="Cargando iPhone Style">
-    <div class="preloader__brand">
-      <img class="brand-logo brand-logo--loader" src="img/logo-iph-style.png" alt="iPhone Style">
-      <span class="brand-fallback brand-fallback--loader" hidden>IPHONE <b>STYLE</b></span>
-      <span class="preloader__label">Experiencia premium</span>
+<html lang="es-AR">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta
+      name="description"
+      content="iPhone Style: equipos Apple seleccionados y asesoramiento personalizado en Rosario y San Lorenzo."
+    />
+    <meta name="theme-color" content="#110306" />
+    <title>iPhone Style — Elegí tu próximo iPhone</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="styles.css?v=20260828-live-catalog" />
+    <script src="app.js?v=20260828-live-catalog" defer></script>
+  </head>
+  <body>
+    <div class="site-loader" id="site-loader" role="status" aria-live="polite">
+      <div class="loader-mark" aria-hidden="true"><span></span></div>
+      <p>iPhone Style</p>
+      <small>Preparando una experiencia excepcional</small>
     </div>
-  </div>
 
-  <header class="site-header">
-    <a class="site-brand" href="#inicio" aria-label="iPhone Style, ir al inicio">
-      <img class="brand-logo brand-logo--header" src="img/logo-iph-style.png" alt="iPhone Style">
-      <span class="brand-fallback brand-fallback--header" hidden>IPHONE <b>STYLE</b></span>
-    </a>
-    <a class="header-action" href="#catalogo">Ver equipos <span aria-hidden="true">↓</span></a>
-  </header>
+    <div class="ambient ambient-one" aria-hidden="true"></div>
+    <div class="ambient ambient-two" aria-hidden="true"></div>
 
-  <main id="inicio">
-    <section class="hero" aria-labelledby="hero-title">
-      <div class="hero__glow hero__glow--one" aria-hidden="true"></div>
-      <div class="hero__glow hero__glow--two" aria-hidden="true"></div>
-      <p class="eyebrow">iPhone Style · Apple specialists</p>
-      <h1 id="hero-title">Elegí tu próximo<br><em>iPhone.</em></h1>
-      <p class="hero__description">Equipos seleccionados, cuotas fijas y el respaldo que esperás.</p>
-      <a class="button button--primary hero__cta" href="#catalogo">Explorar catálogo <span aria-hidden="true">→</span></a>
-    </section>
+    <header class="site-header" id="top">
+      <nav class="nav container" aria-label="Principal">
+        <a class="brand" href="#top" aria-label="iPhone Style, inicio">
+          <img class="brand-logo" src="logo-iph-style.png.PNG" alt="" aria-hidden="true" />
+        </a>
 
-    <section id="catalogo" class="catalog-section" aria-labelledby="catalog-title">
-      <div class="section-intro">
-        <div>
-          <p class="eyebrow">Disponibles ahora</p>
-          <h2 id="catalog-title">Encontrá el tuyo.</h2>
+        <button class="nav-toggle" type="button" aria-label="Abrir menú" aria-expanded="false" aria-controls="nav-links">
+          <span></span><span></span>
+        </button>
+
+        <div class="nav-links" id="nav-links">
+          <a href="#catalogo">Catálogo</a>
+          <a href="#tiendas">Tiendas</a>
+          <button class="nav-text-button" type="button" data-open-modal="trade-in-dialog">Plan Canje</button>
+          <a class="nav-cta" href="#" data-whatsapp="Hola, estaba buscando información.">WhatsApp <span aria-hidden="true">↗</span></a>
         </div>
-        <p class="section-intro__copy">Cada equipo incluye accesorios esenciales y garantía para que disfrutes desde el primer día.</p>
-      </div>
-      <div id="catalog" class="catalog-grid" aria-live="polite" aria-busy="true">
-        <p class="catalog-status">Actualizando catálogo…</p>
-      </div>
-    </section>
+      </nav>
+    </header>
 
-    <section id="tiendas" class="stores-section" aria-labelledby="stores-title">
-      <div class="stores-section__intro">
-        <p class="eyebrow">iPhone Style cerca tuyo</p>
-        <h2 id="stores-title">Nuestras Tiendas.</h2>
-        <p>Elegí la sucursal que te quede mejor y viví la experiencia iPhone Style en persona.</p>
+    <main>
+      <section class="hero container" aria-labelledby="hero-title">
+        <div class="hero-copy">
+          <p class="eyebrow hero-reveal" style="--delay: 110ms">Apple, sin vueltas</p>
+          <h1 id="hero-title" class="hero-reveal" style="--delay: 180ms">
+            Elegí tu próximo<br />
+            <span>iPhone.</span>
+          </h1>
+          <p class="hero-description hero-reveal" style="--delay: 250ms">
+            Equipos seleccionados, atención personalizada y una compra que se siente tan bien como el producto que te llevás.
+          </p>
+          <div class="hero-actions hero-reveal" style="--delay: 320ms">
+            <a class="button button-primary magnetic" href="#catalogo" data-magnetic>
+              <span>Explorar catálogo</span><span class="button-arrow" aria-hidden="true">↓</span>
+            </a>
+            <button class="button button-quiet" type="button" data-open-modal="trade-in-dialog">
+              Conocé el Plan Canje <span aria-hidden="true">→</span>
+            </button>
+          </div>
+          <dl class="trust-list hero-reveal" style="--delay: 390ms">
+            <div><dt>+6 años</dt><dd>de experiencia</dd></div>
+            <div><dt>2 sucursales</dt><dd>para asesorarte</dd></div>
+            <div><dt>100%</dt><dd>equipos verificados</dd></div>
+          </dl>
+        </div>
+
+        <div class="hero-device hero-reveal" style="--delay: 260ms" aria-label="iPhone Pro en color titanio sobre una composición oscura">
+          <div class="device-aura" aria-hidden="true"></div>
+          <div class="phone phone-hero" aria-hidden="true">
+            <div class="phone-side-button phone-side-button-one"></div>
+            <div class="phone-side-button phone-side-button-two"></div>
+            <div class="phone-screen">
+              <div class="dynamic-island"></div>
+              <div class="screen-glow"></div>
+              <div class="screen-orb screen-orb-one"></div>
+              <div class="screen-orb screen-orb-two"></div>
+              <p>iPhone 16 Pro</p>
+            </div>
+          </div>
+          <div class="hero-caption glass-panel">
+            <span class="availability-dot" aria-hidden="true"></span>
+            <span>Selección 2026</span>
+            <strong>Lo último. A tu manera.</strong>
+          </div>
+        </div>
+      </section>
+
+      <section class="statement section container" aria-labelledby="statement-title" data-reveal>
+        <p class="eyebrow">La diferencia está en los detalles</p>
+        <h2 id="statement-title">Tecnología increíble.<br /><span>Una compra todavía mejor.</span></h2>
+        <p>Te guiamos de persona a persona para que encuentres el equipo que encaja con tu día a día, sin presión ni letras chicas.</p>
+      </section>
+
+      <section class="catalog section" id="catalogo" aria-labelledby="catalog-title">
+        <div class="container">
+          <div class="section-heading" data-reveal>
+            <div>
+              <p class="eyebrow">Equipos disponibles</p>
+              <h2 id="catalog-title">Encontrá el tuyo.</h2>
+            </div>
+            <a class="text-link" href="#tiendas">¿Necesitás ayuda para elegir? <span aria-hidden="true">→</span></a>
+          </div>
+
+          <aside class="catalog-gift" aria-labelledby="catalog-gift-title" data-reveal>
+            <div>
+              <p class="eyebrow">Beneficios incluidos</p>
+              <h3 id="catalog-gift-title">Tu próximo iPhone, listo para usar.</h3>
+              <p>Con la compra de cualquier equipo te llevás todo lo necesario para estrenarlo desde el primer día.</p>
+            </div>
+            <ul class="catalog-gift-list" aria-label="Regalos incluidos con cada compra">
+              <li>Cargador de carga rápida</li>
+              <li>Cable</li>
+              <li>Funda</li>
+              <li>Templado</li>
+              <li>Garantía</li>
+            </ul>
+          </aside>
+
+          <div class="catalog-groups" id="catalog-groups" aria-live="polite" aria-busy="true">
+            <div class="catalog-grid">
+            <article class="product-skeleton" aria-label="Actualizando catálogo"><div></div><span></span><span></span><span></span></article>
+            <article class="product-skeleton" aria-hidden="true"><div></div><span></span><span></span><span></span></article>
+            <article class="product-skeleton" aria-hidden="true"><div></div><span></span><span></span><span></span></article>
+            </div>
+          </div>
+          <p class="catalog-status" id="catalog-status"><span class="status-spinner" aria-hidden="true"></span> Actualizando catálogo...</p>
+        </div>
+      </section>
+
+      <section class="trade-in-banner container" data-reveal>
+        <div>
+          <p class="eyebrow">Plan Canje</p>
+          <h2>Tu próximo iPhone<br />está más cerca.</h2>
+          <p>Entregá tu equipo actual, recibí una cotización clara y usalo como parte de pago.</p>
+          <button class="button button-light magnetic" type="button" data-open-modal="trade-in-dialog" data-magnetic>
+            Simular mi canje <span aria-hidden="true">→</span>
+          </button>
+        </div>
+        <div class="trade-in-orbit" aria-hidden="true">
+          <div class="phone phone-trade-back"><div class="camera-cluster"><i></i><i></i><i></i></div></div>
+          <div class="trade-symbol">+</div>
+          <div class="phone phone-trade-front"><div class="phone-screen"><div class="dynamic-island"></div><div class="screen-orb screen-orb-three"></div></div></div>
+        </div>
+      </section>
+
+      <section class="stores section container" id="tiendas" aria-labelledby="stores-title">
+        <div class="section-heading" data-reveal>
+          <div>
+            <p class="eyebrow">Atención cercana</p>
+            <h2 id="stores-title">Nuestras tiendas.</h2>
+          </div>
+          <p class="section-side-copy">Una experiencia personalizada, estés donde estés.</p>
+        </div>
+
+        <div class="store-grid">
+          <article class="store-card" data-reveal style="--reveal-delay: 0ms">
+            <div class="store-card-top"><span>01</span><span class="store-radius">Rosario</span></div>
+            <div class="store-map map-rosario" aria-hidden="true"><i></i><i></i><i></i><b></b></div>
+            <div class="store-card-body">
+              <h3>Rosario</h3>
+              <p>Atención uno a uno para elegir, configurar y estrenar tu próximo equipo.</p>
+            </div>
+          </article>
+
+          <article class="store-card" data-reveal style="--reveal-delay: 90ms">
+            <div class="store-card-top"><span>02</span><span class="store-radius">San Lorenzo</span></div>
+            <div class="store-map map-lorenzo" aria-hidden="true"><i></i><i></i><i></i><b></b></div>
+            <div class="store-card-body">
+              <h3>San Lorenzo</h3>
+              <p>La misma selección y asesoramiento premium, más cerca de vos.</p>
+            </div>
+          </article>
+        </div>
+      </section>
+
+      <section class="final-cta section container" data-reveal>
+        <p class="eyebrow">iPhone Style</p>
+        <h2>Elegí algo que<br /><span>te acompañe todos los días.</span></h2>
+        <a class="button button-primary magnetic" href="#catalogo" data-magnetic>Ver equipos disponibles <span aria-hidden="true">↓</span></a>
+      </section>
+    </main>
+
+    <footer class="site-footer container">
+      <a class="brand" href="#top" aria-label="iPhone Style, inicio"><img class="brand-logo" src="logo-iph-style.png.PNG" alt="" aria-hidden="true" /></a>
+      <p>Rosario · San Lorenzo · Santa Fe</p>
+      <div class="social-links" aria-label="Redes sociales">
+        <a href="https://www.instagram.com/iphonestyle.ar/" target="_blank" rel="noreferrer">Instagram <span aria-hidden="true">↗</span></a>
+        <a href="#" data-whatsapp="Hola, estaba buscando información.">WhatsApp <span aria-hidden="true">↗</span></a>
       </div>
-      <div class="stores-grid">
-        <article class="store-card">
-          <div class="store-card__icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none"><path d="M20 10c0 5-8 11-8 11S4 15 4 10a8 8 0 1 1 16 0Z" stroke="currentColor" stroke-width="1.7"/><circle cx="12" cy="10" r="2.65" stroke="currentColor" stroke-width="1.7"/></svg></div>
-          <div><p class="store-card__label">Sucursal</p><h3>Rosario</h3><p>Atención personalizada y equipos disponibles para que encuentres tu próximo iPhone.</p></div>
-        </article>
-        <article class="store-card">
-          <div class="store-card__icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none"><path d="M20 10c0 5-8 11-8 11S4 15 4 10a8 8 0 1 1 16 0Z" stroke="currentColor" stroke-width="1.7"/><circle cx="12" cy="10" r="2.65" stroke="currentColor" stroke-width="1.7"/></svg></div>
-          <div><p class="store-card__label">Sucursal</p><h3>San Lorenzo</h3><p>Te esperamos para asesorarte con la misma atención y respaldo de siempre.</p></div>
-        </article>
+      <p>© <span id="current-year"></span> iPhone Style</p>
+    </footer>
+
+    <dialog class="modal" id="trade-in-dialog" aria-labelledby="trade-in-title">
+      <div class="modal-surface">
+        <button class="modal-close" type="button" data-close-modal aria-label="Cerrar">×</button>
+        <p class="eyebrow">Plan Canje</p>
+        <h2 id="trade-in-title">Cambiá, subí de nivel.</h2>
+        <p class="modal-lead" id="trade-in-target">Contanos sobre el equipo que entregás y te cotizamos la diferencia.</p>
+        <form class="trade-in-form" id="trade-in-form">
+          <label class="form-field form-field-wide">
+            <span>Modelo a entregar</span>
+            <input id="trade-in-model" name="model" type="text" placeholder="Ej.: iPhone 13 Pro" required />
+          </label>
+          <label class="form-field">
+            <span>Capacidad</span>
+            <select id="trade-in-storage" name="storage">
+              <option value="64 GB">64 GB</option>
+              <option value="128 GB" selected>128 GB</option>
+              <option value="256 GB">256 GB</option>
+              <option value="512 GB">512 GB</option>
+              <option value="1 TB">1 TB</option>
+            </select>
+          </label>
+          <label class="form-field">
+            <span>Batería (%)</span>
+            <input id="trade-in-battery" name="battery" type="number" min="0" max="100" inputmode="numeric" placeholder="Ej.: 87" required />
+          </label>
+          <label class="form-field form-field-wide">
+            <span>Estado general</span>
+            <select id="trade-in-condition" name="condition">
+              <option value="Impecable (sin marcas)">Impecable (sin marcas)</option>
+              <option value="Marcas normales de uso">Marcas normales de uso</option>
+              <option value="Detalles estéticos marcados">Detalles estéticos marcados</option>
+              <option value="Vidrio o tapa rota">Vidrio o tapa rota</option>
+            </select>
+          </label>
+          <label class="form-field form-field-wide">
+            <span>Piezas cambiadas o detalles <em>(opcional)</em></span>
+            <textarea id="trade-in-details" name="details" rows="3" placeholder="Ej.: batería cambiada, True Tone no funciona."></textarea>
+          </label>
+          <button class="button button-primary form-submit" type="submit">Cotizar por WhatsApp <span aria-hidden="true">↗</span></button>
+        </form>
       </div>
-    </section>
-  </main>
+    </dialog>
 
-  <footer class="site-footer">
-    <p>© <span id="currentYear"></span> iPhone Style</p>
-    <p>Rosario · San Lorenzo</p>
-  </footer>
-
-  <nav class="social-float" aria-label="Redes sociales de iPhone Style">
-    <a class="social-float__link social-float__link--whatsapp" href="https://wa.me/5493476658161?text=Hola%20iPhone%20Style%21%20Quiero%20hacer%20una%20consulta." target="_blank" rel="noopener noreferrer" aria-label="Escribinos por WhatsApp">
-      <svg viewBox="0 0 32 32" aria-hidden="true"><path d="M19.11 17.2c-.28-.14-1.66-.82-1.92-.91-.26-.1-.45-.14-.64.14-.19.28-.73.91-.9 1.1-.16.19-.33.21-.61.07-.28-.14-1.18-.44-2.25-1.39-.83-.74-1.39-1.66-1.55-1.94-.16-.28-.02-.43.12-.57.12-.12.28-.33.42-.49.14-.16.19-.28.28-.47.09-.19.05-.35-.02-.49-.07-.14-.64-1.55-.87-2.12-.23-.55-.47-.48-.64-.49h-.55c-.19 0-.49.07-.75.35-.26.28-.99.97-.99 2.37s1.01 2.76 1.15 2.95c.14.19 1.98 3.02 4.79 4.24.67.29 1.19.46 1.6.59.67.21 1.28.18 1.76.11.54-.08 1.66-.68 1.9-1.34.23-.66.23-1.23.16-1.34-.07-.12-.26-.19-.54-.33Z"/><path d="M16.03 3.2a12.79 12.79 0 0 0-10.86 19.56L3.3 28.8l6.2-1.82A12.8 12.8 0 1 0 16.03 3.2Zm0 23.25c-2.05 0-4.06-.55-5.82-1.6l-.42-.25-3.68 1.08 1.1-3.59-.27-.44a10.44 10.44 0 1 1 9.09 4.8Z"/></svg>
-    </a>
-    <a class="social-float__link social-float__link--instagram" href="https://www.instagram.com/iphonestyle.ar" target="_blank" rel="noopener noreferrer" aria-label="Seguinos en Instagram, @iphonestyle.ar">
-      <svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><rect x="3" y="3" width="18" height="18" rx="5" stroke="currentColor" stroke-width="1.8"/><circle cx="12" cy="12" r="4" stroke="currentColor" stroke-width="1.8"/><circle cx="17.45" cy="6.65" r="1.1" fill="currentColor"/></svg>
-    </a>
-  </nav>
-
-  <div id="productLightbox" class="product-lightbox" aria-hidden="true">
-    <section class="lightbox-dialog" role="dialog" aria-modal="true" aria-labelledby="lightboxTitle" aria-describedby="lightboxDescription">
-      <button id="closeLightbox" class="lightbox-close" type="button" aria-label="Cerrar vista ampliada">×</button>
-      <div class="lightbox-image-wrap">
-        <img id="lightboxImage" src="" alt="">
+    <dialog class="modal modal-product" id="product-dialog" aria-labelledby="product-dialog-title">
+      <div class="modal-surface">
+        <button class="modal-close" type="button" data-close-modal aria-label="Cerrar">×</button>
+        <div class="product-modal-layout">
+          <div class="product-modal-visual" id="product-modal-visual" aria-hidden="true"></div>
+          <div>
+            <p class="eyebrow">iPhone Style selection</p>
+            <h2 id="product-dialog-title">iPhone</h2>
+            <p class="modal-lead" id="product-dialog-copy"></p>
+          </div>
+        </div>
       </div>
-      <div class="lightbox-copy">
-        <p class="eyebrow">iPhone Style selection</p>
-        <h2 id="lightboxTitle">Equipo seleccionado</h2>
-        <p id="lightboxDescription"></p>
-      </div>
-    </section>
-  </div>
-
-  <div id="canjeModal" class="modal-layer" aria-hidden="true">
-    <section class="tradein-modal" role="dialog" aria-modal="true" aria-labelledby="tradein-title" aria-describedby="tradein-description">
-      <button id="closeModal" class="modal-close" type="button" aria-label="Cerrar Plan Canje">×</button>
-      <p class="eyebrow">Plan Canje</p>
-      <h2 id="tradein-title">Cambiá, subí de nivel.</h2>
-      <p id="tradein-description">Querés llevarte un <strong id="targetProduct">equipo</strong>. Contanos sobre el tuyo y cotizamos la diferencia.</p>
-      <form id="tradeinForm" class="tradein-form">
-        <div class="form-field form-field--wide"><label for="tradeinModel">Modelo a entregar</label><input id="tradeinModel" name="model" type="text" placeholder="Ej.: iPhone 13 Pro" autocomplete="off" required></div>
-        <div class="form-field"><label for="tradeinCapacity">Capacidad</label><select id="tradeinCapacity" name="capacity" required><option>64 GB</option><option selected>128 GB</option><option>256 GB</option><option>512 GB</option><option>1 TB</option></select></div>
-        <div class="form-field"><label for="tradeinBattery">Batería (%)</label><input id="tradeinBattery" name="battery" type="number" inputmode="numeric" min="1" max="100" placeholder="85" required></div>
-        <div class="form-field form-field--wide"><label for="tradeinCondition">Estado general</label><select id="tradeinCondition" name="condition" required><option>Impecable (sin marcas)</option><option>Marcas normales de uso</option><option>Detalles estéticos marcados</option><option>Vidrio o tapa rota</option></select></div>
-        <div class="form-field form-field--wide"><label for="tradeinDetails">Piezas cambiadas o detalles <span>(opcional)</span></label><textarea id="tradeinDetails" name="details" placeholder="Ej.: batería cambiada, True Tone no funciona."></textarea></div>
-        <button class="button button--whatsapp form-submit" type="submit"><span aria-hidden="true">◉</span> Cotizar por WhatsApp</button>
-      </form>
-    </section>
-  </div>
-
-  <script src="https://cdn.jsdelivr.net/npm/papaparse@5.5.3/papaparse.min.js"></script>
-  <script src="app.js" defer></script>
-</body>
+    </dialog>
+  </body>
 </html>
