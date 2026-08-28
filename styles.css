@@ -375,3 +375,30 @@ img { max-width: 100%; }
   .modal-product .product-modal-visual { width: min(100%, 18rem); max-height: 44dvh; margin-inline: auto; }
   .modal-product h2, .modal-product .modal-lead { max-width: none; }
 }
+
+/* Las sucursales son accesos directos; el movimiento confirma que son clickeables. */
+.store-card {
+  display: block;
+  color: inherit;
+  text-decoration: none;
+  cursor: pointer;
+  transition: transform 180ms var(--ease-out), border-color 180ms ease, box-shadow 180ms ease;
+}
+.store-card:focus-visible {
+  outline: 2px solid #fb4859;
+  outline-offset: .3rem;
+}
+.store-card:active {
+  transform: scale(.99);
+}
+@media (hover: hover) and (pointer: fine) {
+  .store-card:hover {
+    transform: translateY(-.35rem);
+    border-color: rgba(240, 43, 60, .52);
+    box-shadow: 0 1rem 2.4rem rgba(0, 0, 0, .22);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .store-card { transition: border-color 1ms ease, box-shadow 1ms ease; }
+  .store-card:active { transform: none; }
+}

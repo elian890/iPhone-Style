@@ -237,6 +237,10 @@ function whatsappUrl(message) {
   return `https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(message)}`;
 }
 
+function storeAppointmentMessage(store) {
+  return `Hola iPhone Style!\nMe gustaría agendar una cita en la sucursal de ${store}.\n\nTambién quisiera saber dónde se encuentra ubicada la sucursal de ${store}.\n\n¿Me comparten los horarios disponibles? ✨`;
+}
+
 function productDescription(product) {
   return `${product.name} · ${product.storage} · ${productMeta(product)}`;
 }
@@ -567,6 +571,9 @@ window.addEventListener("DOMContentLoaded", () => {
   document.querySelector("#current-year").textContent = new Date().getFullYear();
   document.querySelectorAll("[data-whatsapp]").forEach((link) => {
     link.href = whatsappUrl(link.dataset.whatsapp);
+  });
+  document.querySelectorAll("[data-store-whatsapp]").forEach((link) => {
+    link.href = whatsappUrl(storeAppointmentMessage(link.dataset.storeWhatsapp));
   });
   observeReveals();
   setupModals();
