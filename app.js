@@ -342,7 +342,6 @@ async function fetchLiveCatalog() {
 async function loadCatalog() {
   if (catalogRefreshInFlight) return;
   catalogRefreshInFlight = true;
-  let source = "la planilla en vivo";
   let nextCatalog;
 
   try {
@@ -355,7 +354,6 @@ async function loadCatalog() {
       return;
     }
     nextCatalog = fallbackCatalog.map((product) => ({ ...product }));
-    source = "la última copia disponible";
     console.warn("No se pudo actualizar el catálogo desde Google Sheets.", error);
   } finally {
     catalogRefreshInFlight = false;
@@ -369,14 +367,7 @@ async function loadCatalog() {
   catalogGroups.innerHTML = catalogCategories.map(catalogGroupMarkup).join("");
   catalogGroups.setAttribute("aria-busy", "false");
   catalogStatus.classList.add("is-ready");
-  const counts = catalogCategories
-    .map(({ category, title }) => {
-      const total = catalog.filter((product) => product.category === category).length;
-      return total ? `${total} ${title.replace(".", "").toLowerCase()}` : "";
-    })
-    .filter(Boolean)
-    .join(" · ");
-  catalogStatus.textContent = `${counts}. Datos cargados desde ${source}. Actualización automática activa.`;
+  catalogStatus.hidden = true;
   observeReveals(catalogGroups.querySelectorAll("[data-reveal]"));
 }
 
