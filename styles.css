@@ -241,7 +241,7 @@ img { max-width: 100%; }
 .product-card-top h3 { font-size: clamp(1.08rem, 1.65vw, 1.3rem); font-weight: 750; letter-spacing: -.055em; }
 .product-card-top p { margin-top: .38rem; color: var(--muted); font-size: .72rem; }
 .product-card .product-tag { display: none; }
-.product-visual { order: 0; flex: 0 0 clamp(12.2rem, 16vw, 14rem); min-height: 0; margin: 0; border-radius: 0; background: #0d0d0f; }
+.product-visual { order: 0; flex: none; min-height: 0; aspect-ratio: 4 / 5; margin: 0; border-radius: 0; background: #0d0d0f; }
 .product-visual::before { display: none; }
 .product-image { width: 100%; height: 100%; min-height: 100%; padding: 0; object-fit: contain; object-position: center; filter: none; }
 .product-pricing { order: 2; gap: 0; padding: 1.3rem 1.55rem 0; }
@@ -264,38 +264,13 @@ img { max-width: 100%; }
 .product-trade-in { border-color: rgba(255,255,255,.15); background: linear-gradient(180deg, rgba(255,255,255,.08), rgba(255,255,255,.035)); color: var(--text); }
 .product-buy:active, .product-trade-in:active { transform: scale(.98); }
 @media (hover: hover) and (pointer: fine) { .product-buy:hover { transform: translateY(-2px); box-shadow: 0 .85rem 1.65rem rgba(217,20,39,.34); }.product-trade-in:hover { border-color: rgba(240,43,60,.46); background: rgba(217,20,39,.1); }.product-card:hover .product-image { transform: scale(1.025); } }
-@media (max-width: 48rem) { .product-visual { flex-basis: 13rem; }.product-card-top, .product-pricing, .product-footer { padding-inline: 1.2rem; }.product-footer { padding-bottom: 1.2rem; } }
+@media (max-width: 48rem) { .product-visual { flex-basis: auto; aspect-ratio: 4 / 5; }.product-card-top, .product-pricing, .product-footer { padding-inline: 1.2rem; }.product-footer { padding-bottom: 1.2rem; } }
 
-/* Las fotos del inventario pueden ser verticales u horizontales: se muestra la pieza
-   completa, sin cortar el equipo, sobre una superficie oscura uniforme. */
-.product-visual .product-image { object-position: center; }
-
-/* Las tomas verticales se presentan completas. La misma foto, suavizada detrás,
-   rellena la tarjeta sin deformar ni esconder el equipo principal. */
-.product-visual,
-.modal-product .product-modal-visual {
-  isolation: isolate;
-}
-.product-image-backdrop {
-  position: absolute !important;
-  z-index: 0 !important;
-  inset: -1rem;
-  width: calc(100% + 2rem) !important;
-  height: calc(100% + 2rem) !important;
-  min-height: 0 !important;
-  padding: 0 !important;
-  object-fit: cover !important;
-  object-position: center !important;
-  filter: blur(1.15rem) saturate(1.08) brightness(.48) !important;
-  opacity: .58;
-  transform: scale(1.08) !important;
-  pointer-events: none;
-}
 .product-image-main {
   position: relative !important;
   z-index: 1 !important;
   display: block;
-  object-fit: contain !important;
+  object-fit: cover !important;
   object-position: center !important;
 }
 .product-visual .product-image-main {
@@ -309,6 +284,7 @@ img { max-width: 100%; }
   height: 100%;
   min-height: 0;
   padding: 0;
+  object-fit: cover !important;
 }
 
 @media (hover: hover) and (pointer: fine) {
