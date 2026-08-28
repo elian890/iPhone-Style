@@ -243,7 +243,7 @@ img { max-width: 100%; }
 .product-card .product-tag { display: none; }
 .product-visual { order: 0; flex: 0 0 clamp(12.2rem, 16vw, 14rem); min-height: 0; margin: 0; border-radius: 0; background: #0d0d0f; }
 .product-visual::before { display: none; }
-.product-image { width: 100%; height: 100%; min-height: 100%; padding: 0; object-fit: cover; filter: none; }
+.product-image { width: 100%; height: 100%; min-height: 100%; padding: 0; object-fit: contain; object-position: center; filter: none; }
 .product-pricing { order: 2; gap: 0; padding: 1.3rem 1.55rem 0; }
 .product-usd-price { margin: 0; color: var(--text); font-size: clamp(1.25rem, 2vw, 1.55rem); font-weight: 750; letter-spacing: -.06em; line-height: 1.08; }
 .product-usd-price strong { color: #fff; }
@@ -266,10 +266,49 @@ img { max-width: 100%; }
 @media (hover: hover) and (pointer: fine) { .product-buy:hover { transform: translateY(-2px); box-shadow: 0 .85rem 1.65rem rgba(217,20,39,.34); }.product-trade-in:hover { border-color: rgba(240,43,60,.46); background: rgba(217,20,39,.1); }.product-card:hover .product-image { transform: scale(1.025); } }
 @media (max-width: 48rem) { .product-visual { flex-basis: 13rem; }.product-card-top, .product-pricing, .product-footer { padding-inline: 1.2rem; }.product-footer { padding-bottom: 1.2rem; } }
 
-/* Cada foto original es vertical: este punto de foco conserva el grupo de iPhones,
-   en vez de recortar la imagen en la zona vacía superior. */
-.product-visual .product-image {
-  object-position: center 62%;
+/* Las fotos del inventario pueden ser verticales u horizontales: se muestra la pieza
+   completa, sin cortar el equipo, sobre una superficie oscura uniforme. */
+.product-visual .product-image { object-position: center; }
+
+/* Las tomas verticales se presentan completas. La misma foto, suavizada detrás,
+   rellena la tarjeta sin deformar ni esconder el equipo principal. */
+.product-visual,
+.modal-product .product-modal-visual {
+  isolation: isolate;
+}
+.product-image-backdrop {
+  position: absolute !important;
+  z-index: 0 !important;
+  inset: -1rem;
+  width: calc(100% + 2rem) !important;
+  height: calc(100% + 2rem) !important;
+  min-height: 0 !important;
+  padding: 0 !important;
+  object-fit: cover !important;
+  object-position: center !important;
+  filter: blur(1.15rem) saturate(1.08) brightness(.48) !important;
+  opacity: .58;
+  transform: scale(1.08) !important;
+  pointer-events: none;
+}
+.product-image-main {
+  position: relative !important;
+  z-index: 1 !important;
+  display: block;
+  object-fit: contain !important;
+  object-position: center !important;
+}
+.product-visual .product-image-main {
+  width: 100%;
+  height: 100%;
+  min-height: 100%;
+  padding: 0;
+}
+.modal-product .product-modal-visual .product-image-main {
+  width: 100%;
+  height: 100%;
+  min-height: 0;
+  padding: 0;
 }
 
 @media (hover: hover) and (pointer: fine) {
@@ -325,7 +364,7 @@ img { max-width: 100%; }
   height: 100%;
   min-height: 0;
   padding: 0;
-  object-fit: cover;
+  object-fit: contain;
   object-position: center;
 }
 .modal-product .eyebrow {

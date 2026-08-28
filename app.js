@@ -272,7 +272,8 @@ function productMarkup(product, index) {
         <div><h3>${escapeHtml(product.name)} · ${escapeHtml(product.storage)}</h3><p>${escapeHtml(productMeta(product))}</p></div>
       </div>
       <div class="product-visual">
-        <img class="product-image" src="${escapeHtml(product.image)}" alt="${escapeHtml(`${product.name} ${product.color} de ${product.storage}`)}" loading="lazy" decoding="async" />
+        <img class="product-image product-image-backdrop" src="${escapeHtml(product.image)}" alt="" aria-hidden="true" loading="lazy" decoding="async" />
+        <img class="product-image product-image-main" src="${escapeHtml(product.image)}" alt="${escapeHtml(`${product.name} ${product.color} de ${product.storage}`)}" loading="lazy" decoding="async" />
       </div>
       <div class="product-pricing" aria-label="Precios de ${escapeHtml(product.name)}">
         <p class="product-usd-price">Precio en USD: <strong>${escapeHtml(formatUsdPrice(product.usd))}</strong></p>
@@ -503,7 +504,9 @@ function showProduct(product) {
   selectedTradeInProduct = product;
   dialog.querySelector("#product-dialog-title").textContent = `${product.name} · ${product.storage}`;
   dialog.querySelector("#product-dialog-copy").textContent = "Con la compra de cualquier equipo te llevás un cargador de carga rápida + cable + funda + vidrio templado + una garantía de regalo. 🎁 Compra seguro y tranquilo en iPhone Style.";
-  dialog.querySelector("#product-modal-visual").innerHTML = `<img class="product-image" src="${escapeHtml(product.image)}" alt="${escapeHtml(`${product.name} ${product.color} de ${product.storage}`)}" />`;
+  dialog.querySelector("#product-modal-visual").innerHTML = `
+    <img class="product-image product-image-backdrop" src="${escapeHtml(product.image)}" alt="" aria-hidden="true" />
+    <img class="product-image product-image-main" src="${escapeHtml(product.image)}" alt="${escapeHtml(`${product.name} ${product.color} de ${product.storage}`)}" />`;
   openModal(dialog);
 }
 
