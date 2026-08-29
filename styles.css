@@ -18,7 +18,7 @@
   --ease-in-out: cubic-bezier(0.77, 0, 0.175, 1);
   --shadow-soft: 0 1.5rem 4rem rgba(0, 0, 0, 0.2);
   --shadow-deep: 0 2rem 7rem rgba(0, 0, 0, 0.55);
-  font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text", "Segoe UI", ui-sans-serif, system-ui, sans-serif;
   font-synthesis: none;
 }
 
@@ -99,6 +99,57 @@ img { max-width: 100%; }
 .hero-caption strong { grid-column: 1 / -1; margin-top: .2rem; color: var(--text); font-size: .75rem; letter-spacing: -.02em; }
 .availability-dot { width: .45rem; height: .45rem; align-self: center; border-radius: 50%; background: var(--lime); box-shadow: 0 0 .8rem rgba(217,20,39,.75); }
 
+/* Portada iPhone 17 Pro Max: una pieza de producto con profundidad, no un fondo decorativo. */
+.hero-device--17 { min-height: clamp(32rem, 49vw, 43.5rem); isolation: isolate; animation: hero-device-arrival 820ms var(--ease-out) 210ms both; }
+.hero-device-scroll-layer { width: 100%; height: 100%; }
+.hero-device-stage { position: relative; width: 100%; height: 100%; display: grid; place-items: center; transform-style: preserve-3d; transition: transform 260ms var(--ease-out); }
+.hero-device-halo { position: absolute; z-index: -1; width: min(32rem, 90%); aspect-ratio: 1; border-radius: 50%; background: radial-gradient(circle, rgba(190, 25, 41, .3), rgba(105, 8, 20, .12) 39%, transparent 69%); filter: blur(1.25rem); transform: translate3d(8%, 3%, 0); }
+.hero-product-image { position: relative; z-index: 1; display: block; width: auto; max-width: none; height: clamp(31rem, 51vw, 45rem); filter: drop-shadow(1.3rem 2.2rem 2.6rem rgba(0, 0, 0, .48)); pointer-events: none; transform: translate3d(4%, 0, 0) rotate(1.35deg); transition: transform 260ms var(--ease-out); }
+.hero-caption--17 { z-index: 3; right: auto; bottom: 7%; left: -2%; min-width: 11.6rem; grid-template-columns: auto 1fr; row-gap: .05rem; border-color: rgba(255,255,255,.17); background: rgba(22, 8, 11, .58); }
+.hero-caption--17 strong { font-size: .82rem; }
+.hero-caption--17 small { grid-column: 1 / -1; color: var(--muted); font-size: .63rem; }
+@keyframes hero-device-arrival { from { opacity: 0; transform: translate3d(1.65rem, 1.4rem, 0) scale(.965); } to { opacity: 1; transform: translate3d(0, 0, 0) scale(1); } }
+@keyframes hero-device-reduced-arrival { from { opacity: 0; } to { opacity: 1; } }
+
+/* Coreografía de scroll: entradas únicas por sección, siempre mediante opacity y transform. */
+.statement, .catalog, .stores, .final-cta { position: relative; }
+.scroll-scenes-ready .statement::after { content: ""; position: absolute; top: 0; right: 0; width: clamp(6rem, 16vw, 14rem); height: 1px; background: linear-gradient(90deg, transparent, var(--brand-red)); transform: scaleX(.12); transform-origin: right; opacity: .25; transition: transform 620ms var(--ease-out), opacity 440ms var(--ease-out); }
+.scroll-scenes-ready .statement.is-scroll-active::after { transform: scaleX(1); opacity: .9; }
+.scroll-scenes-ready .statement h2, .scroll-scenes-ready .statement > p:last-child { opacity: .01; transform: translate3d(0, 1.2rem, 0); transition: transform 560ms var(--ease-out), opacity 420ms var(--ease-out); }
+.scroll-scenes-ready .statement > p:last-child { transition-delay: 90ms; }
+.scroll-scenes-ready .statement.is-scroll-active h2, .scroll-scenes-ready .statement.is-scroll-active > p:last-child { opacity: 1; transform: translate3d(0, 0, 0); }
+.scroll-scenes-ready .catalog::before { content: ""; position: absolute; top: clamp(3rem, 7vw, 6rem); left: 0; width: clamp(10rem, 28vw, 23rem); height: 1px; background: linear-gradient(90deg, var(--brand-red), transparent); opacity: 0; transform: translate3d(-42%, 0, 0); transition: transform 640ms var(--ease-out), opacity 420ms var(--ease-out); }
+.scroll-scenes-ready .catalog.is-scroll-active::before { opacity: .82; transform: translate3d(0, 0, 0); }
+.scroll-scenes-ready .catalog-gift > div { opacity: .01; transform: translate3d(-1.1rem, 0, 0); transition: transform 540ms var(--ease-out), opacity 400ms var(--ease-out); }
+.scroll-scenes-ready .catalog.is-scroll-active .catalog-gift > div { opacity: 1; transform: translate3d(0, 0, 0); }
+.scroll-scenes-ready .catalog-gift-list li { opacity: .01; transform: translate3d(0, .45rem, 0); transition: transform 440ms var(--ease-out), opacity 360ms var(--ease-out); }
+.scroll-scenes-ready .catalog.is-scroll-active .catalog-gift-list li { opacity: 1; transform: translate3d(0, 0, 0); }
+.scroll-scenes-ready .catalog.is-scroll-active .catalog-gift-list li:nth-child(2) { transition-delay: 55ms; }.scroll-scenes-ready .catalog.is-scroll-active .catalog-gift-list li:nth-child(3) { transition-delay: 105ms; }.scroll-scenes-ready .catalog.is-scroll-active .catalog-gift-list li:nth-child(4) { transition-delay: 155ms; }.scroll-scenes-ready .catalog.is-scroll-active .catalog-gift-list li:nth-child(5) { transition-delay: 205ms; }
+.scroll-scenes-ready .product-card .product-visual::before { transform: scale(.9); transition: transform 520ms var(--ease-out); }
+.scroll-scenes-ready .product-card.is-revealed .product-visual::before { transform: scale(1); }
+.scroll-scenes-ready .trade-in-banner::after { transform: translate3d(3.5rem, 2.4rem, 0) scale(.9); transition: transform 620ms var(--ease-out); }
+.scroll-scenes-ready .trade-in-banner.is-scroll-active::after { transform: translate3d(0, 0, 0) scale(1); }
+.scroll-scenes-ready .trade-in-orbit::before { transform: scale(.84) rotate(-9deg); transition: transform 600ms var(--ease-out); }
+.scroll-scenes-ready .trade-in-banner.is-scroll-active .trade-in-orbit::before { transform: scale(1) rotate(0); }
+.scroll-scenes-ready .phone-trade-back { opacity: .01; transform: translate3d(-1.25rem, .85rem, 0) rotate(-21deg); transition: transform 620ms var(--ease-out), opacity 380ms var(--ease-out); }
+.scroll-scenes-ready .phone-trade-front { opacity: .01; transform: translate3d(1.15rem, -.8rem, 0) rotate(19deg); transition: transform 620ms var(--ease-out) 70ms, opacity 380ms var(--ease-out) 70ms; }
+.scroll-scenes-ready .trade-in-banner.is-scroll-active .phone-trade-back { opacity: 1; transform: translate3d(0, 0, 0) rotate(-15deg); }
+.scroll-scenes-ready .trade-in-banner.is-scroll-active .phone-trade-front { opacity: 1; transform: translate3d(0, 0, 0) rotate(13deg); }
+.scroll-scenes-ready .trade-symbol { opacity: .01; transform: scale(.78); transition: transform 480ms var(--ease-out) 100ms, opacity 350ms var(--ease-out) 100ms; }
+.scroll-scenes-ready .trade-in-banner.is-scroll-active .trade-symbol { opacity: 1; transform: scale(1); }
+.scroll-scenes-ready .store-card .store-map::before { transform: scale(.78); transition: transform 520ms var(--ease-out); }
+.scroll-scenes-ready .store-card.is-revealed .store-map::before { transform: scale(1); }
+.scroll-scenes-ready .store-card .store-map i { opacity: .01; transform: scale(.35); transition: transform 380ms var(--ease-out), opacity 280ms var(--ease-out); }
+.scroll-scenes-ready .store-card.is-revealed .store-map i { opacity: 1; transform: scale(1); }
+.scroll-scenes-ready .store-card.is-revealed .store-map i:nth-child(2) { transition-delay: 70ms; }.scroll-scenes-ready .store-card.is-revealed .store-map i:nth-child(3) { transition-delay: 130ms; }
+.scroll-scenes-ready .store-card.is-revealed .store-map b { animation: store-pin-settle 540ms var(--ease-out) both; }
+.scroll-scenes-ready .final-cta::before { content: ""; position: absolute; top: clamp(2rem, 4vw, 4.5rem); left: 50%; width: clamp(4rem, 9vw, 7rem); height: 1px; background: var(--brand-red); opacity: 0; transform: translate3d(-50%, 0, 0) scaleX(.2); transition: transform 520ms var(--ease-out), opacity 400ms var(--ease-out); }
+.scroll-scenes-ready .final-cta.is-scroll-active::before { opacity: .9; transform: translate3d(-50%, 0, 0) scaleX(1); }
+.scroll-scenes-ready .final-cta h2, .scroll-scenes-ready .final-cta .button { opacity: .01; transform: translate3d(0, 1.1rem, 0); transition: transform 560ms var(--ease-out), opacity 420ms var(--ease-out); }
+.scroll-scenes-ready .final-cta .button { transition-delay: 90ms; }
+.scroll-scenes-ready .final-cta.is-scroll-active h2, .scroll-scenes-ready .final-cta.is-scroll-active .button { opacity: 1; transform: translate3d(0, 0, 0); }
+@keyframes store-pin-settle { from { opacity: 0; transform: translate3d(0, -.7rem, 0) rotate(-45deg) scale(.82); } to { opacity: 1; transform: translate3d(0, 0, 0) rotate(-45deg) scale(1); } }
+
 .statement { display: grid; grid-template-columns: 1.05fr .75fr; gap: 2rem; align-items: end; border-top: 1px solid var(--line); }
 .statement .eyebrow { grid-column: 1 / -1; }
 .statement h2, .section-heading h2, .trade-in-banner h2, .final-cta h2 { margin: 0; font-size: clamp(2.4rem, 5vw, 4.5rem); font-weight: 650; letter-spacing: -.065em; line-height: .99; }
@@ -148,11 +199,11 @@ img { max-width: 100%; }
 
 [data-reveal] { opacity: 0; transform: translateY(1.25rem) scale(.985); transition: opacity 650ms var(--ease-out) var(--reveal-delay, 0ms), transform 650ms var(--ease-out) var(--reveal-delay, 0ms); }.is-revealed { opacity: 1; transform: translateY(0) scale(1); }
 
-@media (hover: hover) and (pointer: fine) { .nav-links > a:not(.nav-cta):hover, .nav-text-button:hover, .text-link:hover, .social-links a:hover { color: var(--text); }.nav-cta:hover { transform: translateY(-2px); }.button-quiet:hover span, .text-link:hover span, .social-links a:hover span, .product-select:hover span { transform: translateX(3px); }.button-primary.magnetic:hover { box-shadow: 0 1.1rem 3.5rem rgba(198,255,45,.25); }.product-card:hover { transform: translateY(-.45rem); border-color: var(--line-strong); box-shadow: var(--shadow-soft); }.product-card:hover .product-image { transform: scale(1.035); }.modal-close:hover { background: rgba(255,255,255,.13); transform: rotate(90deg); } }
+@media (hover: hover) and (pointer: fine) { .nav-links > a:not(.nav-cta):hover, .nav-text-button:hover, .text-link:hover, .social-links a:hover { color: var(--text); }.nav-cta:hover { transform: translateY(-2px); }.button-quiet:hover span, .text-link:hover span, .social-links a:hover span, .product-select:hover span { transform: translateX(3px); }.button-primary.magnetic:hover { box-shadow: 0 1.1rem 3.5rem rgba(198,255,45,.25); }.product-card:hover { transform: translateY(-.45rem); border-color: var(--line-strong); box-shadow: var(--shadow-soft); }.product-card:hover .product-image { transform: scale(1.035); }.hero-device--17:hover .hero-product-image { transform: translate3d(4%, -.2rem, 0) rotate(.85deg); }.modal-close:hover { background: rgba(255,255,255,.13); transform: rotate(90deg); } }
 
-@media (max-width: 48rem) { .container { width: min(100% - 2rem, 76rem); }.site-header { padding-top: .75rem; }.nav { min-height: 3.5rem; padding: .45rem .55rem .45rem .8rem; border-radius: 1rem; }.nav-toggle { display: block; }.nav-toggle[aria-expanded="true"] span:first-child { transform: translateY(.31rem) rotate(45deg); }.nav-toggle[aria-expanded="true"] span:last-child { transform: translateY(-.31rem) rotate(-45deg); }.nav-links { position: absolute; top: calc(100% + .5rem); right: 1rem; left: 1rem; display: grid; gap: .15rem; padding: .6rem; border: 1px solid var(--line); border-radius: 1rem; background: rgba(19,19,22,.94); box-shadow: var(--shadow-deep); opacity: 0; transform: translateY(-.5rem) scale(.98); pointer-events: none; transition: opacity 180ms var(--ease-out), transform 180ms var(--ease-out); backdrop-filter: blur(1.2rem); }.nav-links.is-open { opacity: 1; transform: translateY(0) scale(1); pointer-events: auto; }.nav-links > a:not(.nav-cta), .nav-text-button { padding: .8rem; text-align: left; }.nav-cta { justify-content: space-between; margin-top: .25rem; }.hero { grid-template-columns: 1fr; min-height: auto; padding-top: 4.5rem; }.hero-device { min-height: 25rem; order: -1; }.phone-hero { width: 13.3rem; }.hero-caption { right: 5%; bottom: 2%; }.trust-list { margin-top: 3rem; }.statement { grid-template-columns: 1fr; gap: 1.2rem; }.section-heading { align-items: start; flex-direction: column; gap: 1rem; }.catalog-grid { grid-template-columns: 1fr; }.product-card, .product-skeleton { min-height: 26rem; }.product-visual, .product-image { min-height: 13rem; }.trade-in-banner { grid-template-columns: 1fr; min-height: 39rem; }.trade-in-orbit { min-height: 15rem; }.phone-trade-back { left: 15%; }.phone-trade-front { right: 12%; }.store-grid { grid-template-columns: 1fr; }.site-footer { flex-wrap: wrap; }.product-modal-layout { grid-template-columns: 1fr; gap: 1.5rem; }.product-modal-visual { min-height: 12rem; }.modal .button { width: 100%; } }
+@media (max-width: 48rem) { .container { width: min(100% - 2rem, 76rem); }.site-header { padding-top: .75rem; }.nav { min-height: 3.5rem; padding: .45rem .55rem .45rem .8rem; border-radius: 1rem; }.nav-toggle { display: block; }.nav-toggle[aria-expanded="true"] span:first-child { transform: translateY(.31rem) rotate(45deg); }.nav-toggle[aria-expanded="true"] span:last-child { transform: translateY(-.31rem) rotate(-45deg); }.nav-links { position: absolute; top: calc(100% + .5rem); right: 1rem; left: 1rem; display: grid; gap: .15rem; padding: .6rem; border: 1px solid var(--line); border-radius: 1rem; background: rgba(19,19,22,.94); box-shadow: var(--shadow-deep); opacity: 0; transform: translateY(-.5rem) scale(.98); pointer-events: none; transition: opacity 180ms var(--ease-out), transform 180ms var(--ease-out); backdrop-filter: blur(1.2rem); }.nav-links.is-open { opacity: 1; transform: translateY(0) scale(1); pointer-events: auto; }.nav-links > a:not(.nav-cta), .nav-text-button { padding: .8rem; text-align: left; }.nav-cta { justify-content: space-between; margin-top: .25rem; }.hero { grid-template-columns: 1fr; min-height: auto; padding-top: 4.5rem; }.hero-device { min-height: 25rem; order: -1; }.hero-device--17 { min-height: min(36rem, 120vw); margin-top: -.5rem; }.hero-product-image { height: min(35rem, 115vw); }.hero-caption--17 { right: 4%; bottom: 4%; left: auto; }.phone-hero { width: 13.3rem; }.hero-caption { right: 5%; bottom: 2%; }.trust-list { margin-top: 3rem; }.statement { grid-template-columns: 1fr; gap: 1.2rem; }.section-heading { align-items: start; flex-direction: column; gap: 1rem; }.catalog-grid { grid-template-columns: 1fr; }.product-card, .product-skeleton { min-height: 26rem; }.product-visual, .product-image { min-height: 13rem; }.trade-in-banner { grid-template-columns: 1fr; min-height: 39rem; }.trade-in-orbit { min-height: 15rem; }.phone-trade-back { left: 15%; }.phone-trade-front { right: 12%; }.store-grid { grid-template-columns: 1fr; }.site-footer { flex-wrap: wrap; }.product-modal-layout { grid-template-columns: 1fr; gap: 1.5rem; }.product-modal-visual { min-height: 12rem; }.modal .button { width: 100%; } }
 @media (max-width: 26rem) { .hero h1 { font-size: 3rem; }.hero-actions .button { width: 100%; }.trust-list { gap: 1rem; }.trade-in-banner { padding: 1.7rem; }.phone-trade-back, .phone-trade-front { width: 7.5rem; }.store-map { height: 13rem; } }
-@media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; }.site-loader, .button, .nav-cta, .nav-links, .product-card, .product-phone, .modal, [data-reveal], .hero-reveal { animation: none !important; transition-duration: 1ms !important; }.hero-reveal, [data-reveal] { opacity: 1; transform: none; }.loader-mark, .status-spinner, .product-skeleton div, .product-skeleton span { animation: none; }.site-loader.is-leaving { display: none; }.modal.is-open, .modal.is-closing { transform: none; }.product-card:hover { transform: none; } }
+@media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; }.site-loader, .button, .nav-cta, .nav-links, .product-card, .product-phone, .modal, [data-reveal], .hero-reveal { animation: none !important; transition-duration: 1ms !important; }.hero-reveal, [data-reveal] { opacity: 1; transform: none; }.hero-device--17 { opacity: 0; transform: none; animation: hero-device-reduced-arrival 180ms ease-out 160ms both !important; transition: none !important; }.hero-device-stage, .hero-product-image { transition: none !important; }.loader-mark, .status-spinner, .product-skeleton div, .product-skeleton span { animation: none; }.site-loader.is-leaving { display: none; }.modal.is-open, .modal.is-closing { transform: none; }.product-card:hover { transform: none; } }
 @media (prefers-reduced-transparency: reduce) { .nav, .glass-panel, .modal { background: #17171b; backdrop-filter: none; -webkit-backdrop-filter: none; } }
 @media (prefers-contrast: more) { .nav, .product-card, .store-card, .modal { border-color: rgba(255,255,255,.45); }.eyebrow, .hero-description, .statement > p:last-child, .modal-lead { color: #e0e0e5; } }
 
@@ -363,6 +414,10 @@ img { max-width: 100%; }
   font-size: .84rem;
   line-height: 1.72;
 }
+.product-dialog-specs { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: .55rem; margin: 1.4rem 0 0; }
+.product-dialog-specs div { min-width: 0; padding: .65rem .72rem; border: 1px solid rgba(255,255,255,.1); border-radius: .7rem; background: rgba(255,255,255,.04); }
+.product-dialog-specs dt { color: #a8a4aa; font-size: .56rem; font-weight: 700; letter-spacing: .07em; text-transform: uppercase; }
+.product-dialog-specs dd { margin: .15rem 0 0; color: #f3f1f2; font-size: .69rem; font-weight: 600; overflow-wrap: anywhere; }
 
 @media (hover: hover) and (pointer: fine) {
   .product-detail-trigger:hover { background: rgba(255,255,255,.015); }
@@ -374,6 +429,7 @@ img { max-width: 100%; }
   .modal-product .product-modal-layout { grid-template-columns: 1fr; min-height: 0; gap: 1.65rem; }
   .modal-product .product-modal-visual { width: min(100%, 18rem); max-height: 44dvh; margin-inline: auto; }
   .modal-product h2, .modal-product .modal-lead { max-width: none; }
+  .product-dialog-specs { grid-template-columns: 1fr; }
 }
 
 /* Las sucursales son accesos directos; el movimiento confirma que son clickeables. */
@@ -401,4 +457,26 @@ img { max-width: 100%; }
 @media (prefers-reduced-motion: reduce) {
   .store-card { transition: border-color 1ms ease, box-shadow 1ms ease; }
   .store-card:active { transform: none; }
+}
+
+/* Plan Canje: una escena original de intercambio, compuesta para iPhone Style. */
+.trade-in-banner--exchange { display: grid; place-items: start center; min-height: clamp(31rem, 48vw, 39rem); padding: clamp(2rem, 5vw, 4rem); background: #f3f1ed; color: #171719; isolation: isolate; }
+.trade-in-banner--exchange .trade-in-media { position: absolute; z-index: 0; inset: 0; overflow: hidden; }
+.trade-in-banner--exchange .trade-in-media img { display: block; width: 100%; height: 100%; object-fit: cover; object-position: center; transition: transform 320ms var(--ease-out); }
+.trade-in-banner--exchange::after { content: ""; position: absolute; z-index: 1; inset: 0 auto 0 -35%; width: 34%; height: 100%; border-radius: 0; background: linear-gradient(105deg, transparent 12%, rgba(255,255,255,.5) 48%, transparent 85%); filter: none; opacity: 0; transform: translate3d(0, 0, 0) skewX(-12deg); pointer-events: none; }
+.trade-in-banner--exchange .trade-in-copy { position: relative; z-index: 2; width: min(100%, 29rem); text-align: center; }
+.trade-in-banner--exchange .eyebrow { color: #b80c1e; }
+.trade-in-banner--exchange h2 { color: #19191b; }
+.trade-in-banner--exchange p:not(.eyebrow) { margin-inline: auto; color: #505056; }
+.trade-in-banner--exchange .button { margin-top: 1.65rem; }
+.scroll-scenes-ready .trade-in-banner--exchange .trade-in-media { opacity: .01; transform: scale(1.055); transition: transform 760ms var(--ease-out), opacity 520ms var(--ease-out); }
+.scroll-scenes-ready .trade-in-banner--exchange.is-scroll-active .trade-in-media { opacity: 1; transform: scale(1); }
+.scroll-scenes-ready .trade-in-banner--exchange .trade-in-copy { opacity: .01; transform: translate3d(0, -1.15rem, 0); transition: transform 560ms var(--ease-out) 110ms, opacity 420ms var(--ease-out) 110ms; }
+.scroll-scenes-ready .trade-in-banner--exchange.is-scroll-active .trade-in-copy { opacity: 1; transform: translate3d(0, 0, 0); }
+.scroll-scenes-ready .trade-in-banner--exchange::after { opacity: .01; transition: transform 780ms var(--ease-out) 180ms, opacity 320ms var(--ease-out) 180ms; }
+.scroll-scenes-ready .trade-in-banner--exchange.is-scroll-active::after { opacity: 1; transform: translate3d(420%, 0, 0) skewX(-12deg); }
+@media (max-width: 48rem) {
+  .trade-in-banner--exchange { min-height: 35rem; padding: 2rem 1.25rem; }
+  .trade-in-banner--exchange .trade-in-media img { object-position: 50% 50%; }
+  .trade-in-banner--exchange .trade-in-copy { margin-top: .65rem; }
 }

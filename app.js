@@ -156,9 +156,21 @@ function sheetCategory(row) {
   return null;
 }
 
+function normalizeCatalogCategory(value = "") {
+  const text = normalizeHeader(value);
+  if (text.includes("NUEVO")) return "Nuevo sellado";
+  if (text.includes("PREMIUM") || text.includes("USADO")) return "Usado premium";
+  if (text.includes("OUTLET")) return "Outlet";
+  return null;
+}
+
 function sheetValue(row, headers, name) {
   const index = headers.indexOf(name);
   return index >= 0 ? row[index]?.trim() || "" : "";
+}
+
+function firstSheetValue(row, headers, names) {
+  return names.map((name) => sheetValue(row, headers, name)).find(Boolean) || "";
 }
 
 function displayPrice(value) {
@@ -167,22 +179,73 @@ function displayPrice(value) {
   return cleanValue.startsWith("$") ? cleanValue : `$${cleanValue}`;
 }
 
-function safeImageUrl(value) {
-  const image = String(value || "").trim();
-  if (!image) return DEFAULT_PRODUCT_IMAGE;
+function imageUrls(value) {
+  const image = String(value || "").trim().match(/https?:\/\/[^\s"')]+/i)?.[0] || "";
+  if (!image) return [DEFAULT_PRODUCT_IMAGE];
 
   try {
     const url = new URL(image);
-    return ["https:", "http:"].includes(url.protocol) ? url.href : DEFAULT_PRODUCT_IMAGE;
+    if (!["https:", "http:"].includes(url.protocol)) return [DEFAULT_PRODUCT_IMAGE];
+
+    const driveFileId = url.hostname.includes("drive.google.com")
+      ? url.pathname.match(/\/d\/([^/]+)/)?.[1] || url.searchParams.get("id")
+      : null;
+    if (driveFileId) {
+      const id = encodeURIComponent(driveFileId);
+      return [
+        `https://drive.google.com/thumbnail?id=${id}&sz=w1600`,
+        `https://drive.usercontent.google.com/download?id=${id}&export=view&confirm=t`,
+        `https://drive.google.com/uc?export=view&id=${id}`,
+      ];
+    }
+
+    if (url.hostname === "github.com" && url.pathname.includes("/blob/")) {
+      const [owner, repository, , branch, ...filePath] = url.pathname.split("/").filter(Boolean);
+      if (owner && repository && branch && filePath.length) {
+        return [`https://raw.githubusercontent.com/${owner}/${repository}/${branch}/${filePath.map(encodeURIComponent).join("/")}`];
+      }
+    }
+
+    return [url.href];
   } catch {
-    return DEFAULT_PRODUCT_IMAGE;
+    return [DEFAULT_PRODUCT_IMAGE];
   }
+}
+
+function safeImageUrl(value) {
+  return imageUrls(value)[0];
+}
+
+function productImageMarkup(product, attributes = "") {
+  const sources = product.imageFallbacks?.length ? product.imageFallbacks : [product.image || DEFAULT_PRODUCT_IMAGE];
+  return `<img class="product-image product-image-main" src="${escapeHtml(sources[0])}" data-image-sources="${escapeHtml(JSON.stringify(sources))}" data-image-source-index="0" referrerpolicy="no-referrer" ${attributes} />`;
+}
+
+function productDetailsMarkup(product) {
+  const omitted = new Set([
+    "MODELO", "GB", "CAPACIDAD", "COLOR", "BATERIA", "DETALLES", "IMAGEN",
+    "USD", "PESOS", "EFECTIVO", "TRANSFERENCIA", "3 CUOTAS FIJAS", "6 CUOTAS FIJAS",
+    "9 CUOTAS FIJAS", "12 CUOTAS FIJAS", "18 CUOTAS FIJAS",
+  ]);
+  const core = [
+    ["Color", product.color],
+    ["Batería", product.battery ? `${product.battery}%` : ""],
+    ["Detalles", product.detail],
+  ];
+  const extras = Object.entries(product.sheetDetails || {})
+    .filter(([key, value]) => value && !omitted.has(normalizeHeader(key)));
+
+  return [...core, ...extras]
+    .filter(([, value]) => value)
+    .map(([label, value]) => `<div><dt>${escapeHtml(label)}</dt><dd>${escapeHtml(value)}</dd></div>`)
+    .join("");
 }
 
 function parseCatalogSheet(csv) {
   const rows = parseCsv(csv);
   let category = null;
   let headers = [];
+  let headerLabels = [];
   const products = [];
 
   rows.forEach((row) => {
@@ -190,36 +253,50 @@ function parseCatalogSheet(csv) {
     if (categoryFromRow) {
       category = categoryFromRow;
       headers = [];
+      headerLabels = [];
       return;
     }
 
     const normalizedRow = row.map(normalizeHeader);
-    if (normalizedRow.includes("IMAGEN") && normalizedRow.includes("MODELO")) {
+    const hasImageColumn = normalizedRow.some((header) => ["IMAGEN", "FOTO", "FOTOS", "URL IMAGEN", "LINK IMAGEN"].includes(header));
+    const hasModelColumn = normalizedRow.some((header) => ["MODELO", "NOMBRE", "EQUIPO"].includes(header));
+    if (hasImageColumn && hasModelColumn) {
       headers = normalizedRow;
+      headerLabels = row.map((cell) => cell.trim());
       return;
     }
 
-    if (!category || !headers.length) return;
-    const name = sheetValue(row, headers, "MODELO");
+    if (!headers.length) return;
+    const name = firstSheetValue(row, headers, ["MODELO", "NOMBRE", "EQUIPO"]);
     if (!name) return;
 
-    const storage = sheetValue(row, headers, "GB");
+    const storage = firstSheetValue(row, headers, ["GB", "CAPACIDAD"]);
+    const categoryFromColumn = normalizeCatalogCategory(firstSheetValue(row, headers, ["CATEGORIA", "TIPO", "ESTADO"]));
+    const productCategory = categoryFromColumn || category;
+    if (!productCategory) return;
+    const sheetDetails = Object.fromEntries(
+      headers.map((header, index) => [headerLabels[index] || header, row[index]?.trim() || ""]),
+    );
+    const imageValue = firstSheetValue(row, headers, ["IMAGEN", "FOTO", "FOTOS", "URL IMAGEN", "LINK IMAGEN"]);
+    const imageFallbacks = imageUrls(imageValue);
     products.push({
-      category,
+      category: productCategory,
       name,
-      storage: storage ? `${storage} GB` : "Capacidad a confirmar",
-      color: sheetValue(row, headers, "COLOR") || "Color a confirmar",
-      battery: sheetValue(row, headers, "BATERIA"),
+      storage: storage ? (/\b(?:GB|TB)\b/i.test(storage) ? storage : `${storage} GB`) : "Capacidad a confirmar",
+      color: firstSheetValue(row, headers, ["COLOR", "COLOR DEL EQUIPO"]) || "Color a confirmar",
+      battery: firstSheetValue(row, headers, ["BATERIA", "BATERIA %", "SALUD DE BATERIA"]),
       detail: sheetValue(row, headers, "DETALLES"),
-      image: safeImageUrl(sheetValue(row, headers, "IMAGEN")),
-      usd: displayPrice(sheetValue(row, headers, "USD")),
-      cash: displayPrice(sheetValue(row, headers, "PESOS")),
+      image: imageFallbacks[0],
+      imageFallbacks,
+      usd: displayPrice(firstSheetValue(row, headers, ["USD", "PRECIO USD"])),
+      cash: displayPrice(firstSheetValue(row, headers, ["PESOS", "EFECTIVO", "PRECIO EFECTIVO"])),
       transfer: displayPrice(sheetValue(row, headers, "TRANSFERENCIA")),
       installment: displayPrice(sheetValue(row, headers, "3 CUOTAS FIJAS")),
       installment6: displayPrice(sheetValue(row, headers, "6 CUOTAS FIJAS")),
       installment9: displayPrice(sheetValue(row, headers, "9 CUOTAS FIJAS")),
       installment12: displayPrice(sheetValue(row, headers, "12 CUOTAS FIJAS")),
       installment18: displayPrice(sheetValue(row, headers, "18 CUOTAS FIJAS")),
+      sheetDetails,
     });
   });
 
@@ -276,7 +353,7 @@ function productMarkup(product, index) {
         <div><h3>${escapeHtml(product.name)} · ${escapeHtml(product.storage)}</h3><p>${escapeHtml(productMeta(product))}</p></div>
       </div>
       <div class="product-visual">
-        <img class="product-image product-image-main" src="${escapeHtml(product.image)}" alt="${escapeHtml(`${product.name} ${product.color} de ${product.storage}`)}" loading="lazy" decoding="async" />
+        ${productImageMarkup(product, `alt="${escapeHtml(`${product.name} ${product.color} de ${product.storage}`)}" loading="lazy" decoding="async"`)}
       </div>
       <div class="product-pricing" aria-label="Precios de ${escapeHtml(product.name)}">
         <p class="product-usd-price">Precio en USD: <strong>${escapeHtml(formatUsdPrice(product.usd))}</strong></p>
@@ -498,8 +575,25 @@ function showProduct(product) {
   selectedTradeInProduct = product;
   dialog.querySelector("#product-dialog-title").textContent = `${product.name} · ${product.storage}`;
   dialog.querySelector("#product-dialog-copy").textContent = "Con la compra de cualquier equipo te llevás un cargador de carga rápida + cable + funda + vidrio templado + una garantía de regalo. 🎁 Compra seguro y tranquilo en iPhone Style.";
-  dialog.querySelector("#product-modal-visual").innerHTML = `<img class="product-image product-image-main" src="${escapeHtml(product.image)}" alt="${escapeHtml(`${product.name} ${product.color} de ${product.storage}`)}" />`;
+  dialog.querySelector("#product-modal-visual").innerHTML = productImageMarkup(product, `alt="${escapeHtml(`${product.name} ${product.color} de ${product.storage}`)}"`);
+  dialog.querySelector("#product-dialog-specs").innerHTML = productDetailsMarkup(product);
   openModal(dialog);
+}
+
+function setupImageFallbacks() {
+  document.addEventListener("error", (event) => {
+    const image = event.target.closest(".product-image");
+    if (!image) return;
+    const sources = JSON.parse(image.dataset.imageSources || "[]");
+    const nextIndex = Number(image.dataset.imageSourceIndex || 0) + 1;
+    if (sources[nextIndex]) {
+      image.dataset.imageSourceIndex = String(nextIndex);
+      image.src = sources[nextIndex];
+      return;
+    }
+    if (image.src.endsWith(DEFAULT_PRODUCT_IMAGE)) return;
+    image.src = DEFAULT_PRODUCT_IMAGE;
+  }, true);
 }
 
 function setupCatalogEvents() {
@@ -530,6 +624,102 @@ function setupMagneticButtons() {
     button.addEventListener("pointerleave", () => {
       button.style.transform = "translate3d(0, 0, 0)";
     });
+  });
+}
+
+function setupHeroDeviceMotion() {
+  const stage = document.querySelector("[data-hero-device]");
+  const canHover = window.matchMedia("(hover: hover) and (pointer: fine)").matches;
+  if (!stage || !canHover || prefersReducedMotion) return;
+
+  let resetTimer;
+
+  stage.addEventListener("pointermove", (event) => {
+    window.clearTimeout(resetTimer);
+    const bounds = stage.getBoundingClientRect();
+    const x = (event.clientX - bounds.left) / bounds.width - 0.5;
+    const y = (event.clientY - bounds.top) / bounds.height - 0.5;
+    const rotateX = -y * 2.8;
+    const rotateY = x * 3.6;
+
+    stage.style.willChange = "transform";
+    stage.style.transform = `perspective(1100px) rotateX(${rotateX}deg) rotateY(${rotateY}deg) translate3d(${x * 8}px, ${y * 7}px, 0)`;
+  });
+
+  stage.addEventListener("pointerleave", () => {
+    stage.style.transform = "";
+    resetTimer = window.setTimeout(() => {
+      stage.style.willChange = "";
+    }, 280);
+  });
+}
+
+function setupHeroScrollDepth() {
+  const layer = document.querySelector("[data-hero-parallax]");
+  const copy = document.querySelector("[data-hero-copy-parallax]");
+  if (!layer || !copy || prefersReducedMotion) return;
+
+  let frameId = 0;
+  const updateDepth = () => {
+    frameId = 0;
+    const hero = layer.closest(".hero-device");
+    const bounds = hero.getBoundingClientRect();
+    const viewportHeight = window.innerHeight || document.documentElement.clientHeight;
+    if (bounds.bottom < 0 || bounds.top > viewportHeight) {
+      layer.style.transform = "";
+      copy.style.transform = "";
+      layer.style.willChange = "";
+      copy.style.willChange = "";
+      return;
+    }
+
+    const progress = Math.max(0, Math.min(1, -bounds.top / Math.max(bounds.height, viewportHeight)));
+    layer.style.willChange = "transform";
+    copy.style.willChange = "transform";
+    layer.style.transform = `translate3d(0, ${Math.round(progress * 76)}px, 0) scale(${1 - progress * 0.055})`;
+    copy.style.transform = `translate3d(0, ${Math.round(progress * -44)}px, 0)`;
+  };
+  const scheduleDepth = () => {
+    if (!frameId) frameId = window.requestAnimationFrame(updateDepth);
+  };
+
+  window.addEventListener("scroll", scheduleDepth, { passive: true });
+  window.addEventListener("resize", scheduleDepth, { passive: true });
+  scheduleDepth();
+}
+
+function setupScrollScenes() {
+  const scenes = document.querySelectorAll("[data-scroll-scene]");
+  if (!scenes.length || prefersReducedMotion || !("IntersectionObserver" in window)) return;
+
+  document.documentElement.classList.add("scroll-scenes-ready");
+  const observer = new IntersectionObserver(
+    (entries, activeObserver) => {
+      entries.forEach((entry) => {
+        if (!entry.isIntersecting) return;
+        entry.target.classList.add("is-scroll-active");
+        activeObserver.unobserve(entry.target);
+      });
+    },
+    { threshold: 0.16, rootMargin: "0px 0px -9%" },
+  );
+  scenes.forEach((scene) => observer.observe(scene));
+}
+
+function setupTradeInMediaMotion() {
+  const media = document.querySelector("[data-trade-in-media]");
+  const image = media?.querySelector("img");
+  const canHover = window.matchMedia("(hover: hover) and (pointer: fine)").matches;
+  if (!media || !image || !canHover || prefersReducedMotion) return;
+
+  media.addEventListener("pointermove", (event) => {
+    const bounds = media.getBoundingClientRect();
+    const x = (event.clientX - bounds.left) / bounds.width - 0.5;
+    const y = (event.clientY - bounds.top) / bounds.height - 0.5;
+    image.style.transform = `scale(1.035) translate3d(${x * 10}px, ${y * 8}px, 0)`;
+  });
+  media.addEventListener("pointerleave", () => {
+    image.style.transform = "";
   });
 }
 
@@ -569,8 +759,13 @@ window.addEventListener("DOMContentLoaded", () => {
   observeReveals();
   setupModals();
   setupTradeInForm();
+  setupImageFallbacks();
   setupCatalogEvents();
   setupMagneticButtons();
+  setupHeroDeviceMotion();
+  setupHeroScrollDepth();
+  setupScrollScenes();
+  setupTradeInMediaMotion();
   setupNavigation();
   loadCatalog();
   window.setInterval(() => {

@@ -9,14 +9,8 @@
     />
     <meta name="theme-color" content="#110306" />
     <title>iPhone Style — Elegí tu próximo iPhone</title>
-    <link rel="preconnect" href="https://fonts.googleapis.com" />
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link
-      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap"
-      rel="stylesheet"
-    />
-    <link rel="stylesheet" href="styles.css?v=20260828-store-citas" />
-    <script src="app.js?v=20260828-catalog-private" defer></script>
+    <link rel="stylesheet" href="styles.css?v=20260829-drive-photos-v5" />
+    <script src="app.js?v=20260829-drive-photos-v5" defer></script>
   </head>
   <body>
     <div class="site-loader" id="site-loader" role="status" aria-live="polite">
@@ -49,7 +43,7 @@
 
     <main>
       <section class="hero container" aria-labelledby="hero-title">
-        <div class="hero-copy">
+        <div class="hero-copy" data-hero-copy-parallax>
           <p class="eyebrow hero-reveal" style="--delay: 110ms">Apple, sin vueltas</p>
           <h1 id="hero-title" class="hero-reveal" style="--delay: 180ms">
             Elegí tu próximo<br />
@@ -73,34 +67,35 @@
           </dl>
         </div>
 
-        <div class="hero-device hero-reveal" style="--delay: 260ms" aria-label="iPhone Pro en color titanio sobre una composición oscura">
-          <div class="device-aura" aria-hidden="true"></div>
-          <div class="phone phone-hero" aria-hidden="true">
-            <div class="phone-side-button phone-side-button-one"></div>
-            <div class="phone-side-button phone-side-button-two"></div>
-            <div class="phone-screen">
-              <div class="dynamic-island"></div>
-              <div class="screen-glow"></div>
-              <div class="screen-orb screen-orb-one"></div>
-              <div class="screen-orb screen-orb-two"></div>
-              <p>iPhone 16 Pro</p>
+        <figure class="hero-device hero-device--17" aria-label="iPhone 17 Pro Max color silver">
+          <div class="hero-device-scroll-layer" data-hero-parallax>
+            <div class="hero-device-stage" data-hero-device>
+              <div class="hero-device-halo" aria-hidden="true"></div>
+              <img
+                class="hero-product-image"
+                src="hero-iphone-17-pro-max-silver.png"
+                alt="iPhone 17 Pro Max color silver"
+                fetchpriority="high"
+                decoding="async"
+              />
             </div>
           </div>
-          <div class="hero-caption glass-panel">
+          <figcaption class="hero-caption hero-caption--17 glass-panel">
             <span class="availability-dot" aria-hidden="true"></span>
-            <span>Selección 2026</span>
-            <strong>Lo último. A tu manera.</strong>
-          </div>
-        </div>
+            <span>Nueva selección</span>
+            <strong>iPhone 17 Pro Max</strong>
+            <small>Silver</small>
+          </figcaption>
+        </figure>
       </section>
 
-      <section class="statement section container" aria-labelledby="statement-title" data-reveal>
+      <section class="statement section container" aria-labelledby="statement-title" data-reveal data-scroll-scene>
         <p class="eyebrow">La diferencia está en los detalles</p>
         <h2 id="statement-title">Tecnología increíble.<br /><span>Una compra todavía mejor.</span></h2>
         <p>Te guiamos de persona a persona para que encuentres el equipo que encaja con tu día a día, sin presión ni letras chicas.</p>
       </section>
 
-      <section class="catalog section" id="catalogo" aria-labelledby="catalog-title">
+      <section class="catalog section" id="catalogo" aria-labelledby="catalog-title" data-scroll-scene>
         <div class="container">
           <div class="section-heading" data-reveal>
             <div>
@@ -136,23 +131,21 @@
         </div>
       </section>
 
-      <section class="trade-in-banner container" data-reveal>
-        <div>
+      <section class="trade-in-banner trade-in-banner--exchange container" data-reveal data-scroll-scene>
+        <div class="trade-in-media" data-trade-in-media aria-hidden="true">
+          <img src="trade-in-exchange.png" alt="" decoding="async" />
+        </div>
+        <div class="trade-in-copy">
           <p class="eyebrow">Plan Canje</p>
           <h2>Tu próximo iPhone<br />está más cerca.</h2>
           <p>Entregá tu equipo actual, recibí una cotización clara y usalo como parte de pago.</p>
-          <button class="button button-light magnetic" type="button" data-open-modal="trade-in-dialog" data-magnetic>
+          <button class="button button-primary magnetic" type="button" data-open-modal="trade-in-dialog" data-magnetic>
             Simular mi canje <span aria-hidden="true">→</span>
           </button>
         </div>
-        <div class="trade-in-orbit" aria-hidden="true">
-          <div class="phone phone-trade-back"><div class="camera-cluster"><i></i><i></i><i></i></div></div>
-          <div class="trade-symbol">+</div>
-          <div class="phone phone-trade-front"><div class="phone-screen"><div class="dynamic-island"></div><div class="screen-orb screen-orb-three"></div></div></div>
-        </div>
       </section>
 
-      <section class="stores section container" id="tiendas" aria-labelledby="stores-title">
+      <section class="stores section container" id="tiendas" aria-labelledby="stores-title" data-scroll-scene>
         <div class="section-heading" data-reveal>
           <div>
             <p class="eyebrow">Atención cercana</p>
@@ -200,7 +193,7 @@
         </div>
       </section>
 
-      <section class="final-cta section container" data-reveal>
+      <section class="final-cta section container" data-reveal data-scroll-scene>
         <p class="eyebrow">iPhone Style</p>
         <h2>Elegí algo que<br /><span>te acompañe todos los días.</span></h2>
         <a class="button button-primary magnetic" href="#catalogo" data-magnetic>Ver equipos disponibles <span aria-hidden="true">↓</span></a>
@@ -269,6 +262,7 @@
             <p class="eyebrow">iPhone Style selection</p>
             <h2 id="product-dialog-title">iPhone</h2>
             <p class="modal-lead" id="product-dialog-copy"></p>
+            <dl class="product-dialog-specs" id="product-dialog-specs"></dl>
           </div>
         </div>
       </div>
