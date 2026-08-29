@@ -25,6 +25,9 @@
 * { box-sizing: border-box; }
 html { scroll-behavior: smooth; background: var(--bg); }
 body { margin: 0; min-width: 20rem; overflow-x: hidden; background: var(--bg); color: var(--text); line-height: 1.5; }
+/* Si la página está dentro de un frame, JavaScript no la revela. Es una defensa
+   de respaldo para GitHub Pages, que no permite enviar frame-ancestors por header. */
+html.frame-check-pending body { visibility: hidden; }
 button, a { -webkit-tap-highlight-color: transparent; }
 button { font: inherit; }
 a { color: inherit; text-decoration: none; }
@@ -77,6 +80,11 @@ img { max-width: 100%; }
 .trust-list dt { font-size: .95rem; font-weight: 700; letter-spacing: -.03em; }
 .trust-list dd { margin: .1rem 0 0; color: var(--muted); font-size: .68rem; }
 .hero-reveal { opacity: 0; transform: translateY(1rem); animation: hero-reveal 620ms var(--ease-out) var(--delay) forwards; }
+.hero-reveal--eyebrow { --delay: 110ms; }
+.hero-reveal--title { --delay: 180ms; }
+.hero-reveal--description { --delay: 250ms; }
+.hero-reveal--actions { --delay: 320ms; }
+.hero-reveal--trust { --delay: 390ms; }
 @keyframes hero-reveal { to { opacity: 1; transform: translateY(0); } }
 
 .hero-device { position: relative; min-height: 31rem; display: grid; place-items: center; isolation: isolate; }
@@ -198,6 +206,8 @@ img { max-width: 100%; }
 .modal { width: min(calc(100% - 2rem), 38rem); max-height: min(46rem, calc(100dvh - 2rem)); padding: 0; overflow: auto; border: 1px solid rgba(255,255,255,.14); border-radius: 1.55rem; background: rgba(22,22,26,.76); color: var(--text); box-shadow: var(--shadow-deep); opacity: 0; transform: scale(.96); transition: opacity 250ms var(--ease-out), transform 250ms var(--ease-out), filter 250ms var(--ease-out); backdrop-filter: blur(1.6rem) saturate(140%); -webkit-backdrop-filter: blur(1.6rem) saturate(140%); }.modal[open] { display: block; }.modal.is-open { opacity: 1; transform: scale(1); }.modal.is-closing { opacity: 0; transform: scale(.97); filter: blur(2px); }.modal::backdrop { background: rgba(0,0,0,.68); backdrop-filter: blur(.6rem); -webkit-backdrop-filter: blur(.6rem); }.modal-surface { position: relative; padding: clamp(1.65rem, 5vw, 2.6rem); }.modal h2 { max-width: 28rem; margin: 0; font-size: clamp(2rem, 5vw, 3rem); letter-spacing: -.06em; line-height: 1; }.modal-lead { margin: 1rem 0 0; color: var(--muted-strong); font-size: .9rem; line-height: 1.65; }.modal-close { position: absolute; top: 1rem; right: 1rem; width: 2.25rem; height: 2.25rem; display: grid; place-items: center; padding: 0; border: 1px solid var(--line); border-radius: 50%; background: rgba(255,255,255,.06); color: var(--text); font-size: 1.4rem; line-height: 1; cursor: pointer; transition: transform 160ms var(--ease-out), background-color 160ms ease; }.modal-close:active { scale: .94; }.trade-steps { display: grid; gap: 1rem; margin: 1.8rem 0; padding: 0; list-style: none; }.trade-steps li { display: grid; grid-template-columns: 2rem 1fr; gap: .8rem; }.trade-steps span { width: 1.7rem; height: 1.7rem; display: grid; place-items: center; border: 1px solid var(--line-strong); border-radius: 50%; color: var(--lime); font-size: .6rem; font-weight: 700; }.trade-steps strong { font-size: .84rem; letter-spacing: -.02em; }.trade-steps p { margin: .12rem 0 0; color: var(--muted); font-size: .74rem; }.product-modal-layout { display: grid; grid-template-columns: .8fr 1fr; align-items: center; gap: 2rem; }.product-modal-visual { min-height: 18rem; display: grid; place-items: center; overflow: hidden; border-radius: 1.1rem; background: radial-gradient(circle, var(--product-glow, #555), transparent 60%), #17171b; }.product-modal-visual .product-phone { transform: rotate(9deg); }.modal-price { margin: 1.5rem 0; font-size: 1.1rem; font-weight: 700; letter-spacing: -.04em; }
 
 [data-reveal] { opacity: 0; transform: translateY(1.25rem) scale(.985); transition: opacity 650ms var(--ease-out) var(--reveal-delay, 0ms), transform 650ms var(--ease-out) var(--reveal-delay, 0ms); }.is-revealed { opacity: 1; transform: translateY(0) scale(1); }
+.reveal-delay-1 { --reveal-delay: 55ms; }
+.reveal-delay-2 { --reveal-delay: 110ms; }
 
 @media (hover: hover) and (pointer: fine) { .nav-links > a:not(.nav-cta):hover, .nav-text-button:hover, .text-link:hover, .social-links a:hover { color: var(--text); }.nav-cta:hover { transform: translateY(-2px); }.button-quiet:hover span, .text-link:hover span, .social-links a:hover span, .product-select:hover span { transform: translateX(3px); }.button-primary.magnetic:hover { box-shadow: 0 1.1rem 3.5rem rgba(198,255,45,.25); }.product-card:hover { transform: translateY(-.45rem); border-color: var(--line-strong); box-shadow: var(--shadow-soft); }.product-card:hover .product-image { transform: scale(1.035); }.hero-device--17:hover .hero-product-image { transform: translate3d(4%, -.2rem, 0) rotate(.85deg); }.modal-close:hover { background: rgba(255,255,255,.13); transform: rotate(90deg); } }
 
@@ -618,4 +628,24 @@ img { max-width: 100%; }
 @media (prefers-reduced-motion: reduce) {
   .store-photo img, .store-card-action svg { transition-duration: 1ms; }
   .store-card:hover .store-photo img, .store-card:hover .store-card-action svg { transform: none; }
+}
+
+/* Interacciones activadas por clases: mantienen style-src-attr 'none' en la CSP. */
+.hero-device-scroll-layer,
+.hero-copy { transition: transform 420ms var(--ease-out); }
+.hero-device-scroll-layer.is-scroll-depth-active { transform: translate3d(0, 4.75rem, 0) scale(.945); }
+.hero-copy.is-scroll-depth-active { transform: translate3d(0, -2.75rem, 0); }
+
+@media (hover: hover) and (pointer: fine) {
+  [data-magnetic].is-magnetic-active { transform: translate3d(0, -.15rem, 0) scale(1.01); }
+  .hero-device-stage.is-pointer-active { transform: perspective(1100px) rotateX(.75deg) rotateY(1.8deg) translate3d(.35rem, -.2rem, 0); }
+  .trade-in-banner--exchange .trade-in-media img.is-pointer-active { transform: scale(1.035) translate3d(.28rem, -.18rem, 0); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .hero-device-scroll-layer,
+  .hero-copy,
+  [data-magnetic].is-magnetic-active,
+  .hero-device-stage.is-pointer-active,
+  .trade-in-banner--exchange .trade-in-media img.is-pointer-active { transform: none; }
 }

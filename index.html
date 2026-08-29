@@ -1,16 +1,21 @@
 <!doctype html>
-<html lang="es-AR">
+<html lang="es-AR" class="frame-check-pending">
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta
+      http-equiv="Content-Security-Policy"
+      content="default-src 'self'; base-uri 'self'; object-src 'none'; script-src 'self'; script-src-elem 'self'; script-src-attr 'none'; style-src 'self'; style-src-attr 'none'; img-src 'self' https://iphone-style-ar.github.io https://drive.google.com https://*.googleusercontent.com https://raw.githubusercontent.com; connect-src 'self' https://docs.google.com; font-src 'self'; media-src 'self'; manifest-src 'self'; worker-src 'none'; frame-src 'none'; form-action 'self'; upgrade-insecure-requests; require-trusted-types-for 'script'; trusted-types 'none'"
+    />
+    <meta name="referrer" content="strict-origin-when-cross-origin" />
     <meta
       name="description"
       content="iPhone Style: equipos Apple seleccionados y asesoramiento personalizado en Rosario y San Lorenzo."
     />
     <meta name="theme-color" content="#110306" />
     <title>iPhone Style — Elegí tu próximo iPhone</title>
-    <link rel="stylesheet" href="styles.css?v=20260829-store-photos-v1" />
-    <script src="app.js?v=20260829-catalog-menu-v1" defer></script>
+    <link rel="stylesheet" href="styles.css?v=20260829-security-hardening-v1" />
+    <script src="app.js?v=20260829-security-hardening-v1" defer></script>
   </head>
   <body>
     <div class="site-loader" id="site-loader" role="status" aria-live="polite">
@@ -70,15 +75,15 @@
     <main>
       <section class="hero container" aria-labelledby="hero-title">
         <div class="hero-copy" data-hero-copy-parallax>
-          <p class="eyebrow hero-reveal" style="--delay: 110ms">Apple, sin vueltas</p>
-          <h1 id="hero-title" class="hero-reveal" style="--delay: 180ms">
+          <p class="eyebrow hero-reveal hero-reveal--eyebrow">Apple, sin vueltas</p>
+          <h1 id="hero-title" class="hero-reveal hero-reveal--title">
             Elegí tu próximo<br />
             <span>iPhone.</span>
           </h1>
-          <p class="hero-description hero-reveal" style="--delay: 250ms">
+          <p class="hero-description hero-reveal hero-reveal--description">
             Equipos seleccionados, atención personalizada y una compra que se siente tan bien como el producto que te llevás.
           </p>
-          <div class="hero-actions hero-reveal" style="--delay: 320ms">
+          <div class="hero-actions hero-reveal hero-reveal--actions">
             <a class="button button-primary magnetic" href="#catalogo" data-magnetic>
               <span>Explorar catálogo</span><span class="button-arrow" aria-hidden="true">↓</span>
             </a>
@@ -86,7 +91,7 @@
               Conocé el Plan Canje <span aria-hidden="true">→</span>
             </button>
           </div>
-          <dl class="trust-list hero-reveal" style="--delay: 390ms">
+          <dl class="trust-list hero-reveal hero-reveal--trust">
             <div><dt>+2 años</dt><dd>de experiencia</dd></div>
             <div><dt>2 sucursales</dt><dd>para asesorarte</dd></div>
             <div><dt>100%</dt><dd>equipos verificados</dd></div>
@@ -184,11 +189,11 @@
           <a
             class="store-card store-card--rosario"
             data-reveal
-            style="--reveal-delay: 0ms"
             href="#"
             data-store-whatsapp="Rosario"
             target="_blank"
-            rel="noreferrer"
+            rel="noopener noreferrer"
+            referrerpolicy="no-referrer"
             aria-label="Agendar una cita en Rosario por WhatsApp"
           >
             <div class="store-photo">
@@ -207,11 +212,11 @@
           <a
             class="store-card store-card--san-lorenzo"
             data-reveal
-            style="--reveal-delay: 90ms"
             href="#"
             data-store-whatsapp="San Lorenzo"
             target="_blank"
-            rel="noreferrer"
+            rel="noopener noreferrer"
+            referrerpolicy="no-referrer"
             aria-label="Agendar una cita en San Lorenzo por WhatsApp"
           >
             <div class="store-photo">
@@ -240,7 +245,7 @@
       <a class="brand" href="#top" aria-label="iPhone Style, inicio"><img class="brand-logo" src="logo-iph-style.png.PNG" alt="" aria-hidden="true" /></a>
       <p>Rosario · San Lorenzo · Santa Fe</p>
       <div class="social-links" aria-label="Redes sociales">
-        <a href="https://www.instagram.com/iphonestyle.ar/" target="_blank" rel="noreferrer">Instagram <span aria-hidden="true">↗</span></a>
+        <a href="https://www.instagram.com/iphonestyle.ar/" target="_blank" rel="noopener noreferrer" referrerpolicy="no-referrer">Instagram <span aria-hidden="true">↗</span></a>
         <a href="#" data-whatsapp="Hola, estaba buscando información.">WhatsApp <span aria-hidden="true">↗</span></a>
       </div>
       <p>© <span id="current-year"></span> iPhone Style</p>

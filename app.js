@@ -1,4 +1,31 @@
+"use strict";
+
+// GitHub Pages no permite definir frame-ancestors como cabecera HTTP. La página
+// permanece oculta cuando está embebida y, cuando el navegador lo permite, sale
+// del frame. La protección definitiva se documenta junto con el hosting.
+function enforceFrameProtection() {
+  if (window.top === window.self) {
+    document.documentElement.classList.remove("frame-check-pending");
+    return;
+  }
+
+  document.documentElement.classList.add("is-framed");
+  try {
+    window.top.location.href = window.location.href;
+  } catch {
+    // En un iframe con sandbox la navegación puede estar bloqueada: se conserva
+    // el estado oculto para no ofrecer una superficie clickjacking.
+  }
+}
+
+enforceFrameProtection();
+
 const WHATSAPP_NUMBER = "5493476658161";
+const CATALOG_MAX_BYTES = 1_000_000;
+const CATALOG_MAX_PRODUCTS = 150;
+const PRODUCT_TEXT_MAX_LENGTH = 240;
+const APP_IMAGE_ORIGIN = "https://iphone-style-ar.github.io";
+const APP_IMAGE_REPOSITORY = "/iphone-style-ar/iPhone-Style/";
 
 const fallbackCatalog = [
   { category: "Usado premium", name: "iPhone 13", storage: "128 GB", color: "Midnight", battery: "84%", transfer: "$553.316", installment: "$250.837", image: "https://iphone-style-ar.github.io/iPhone-Style/img/IMG_5174.jpeg" },
@@ -96,13 +123,21 @@ let selectedTradeInProduct = null;
 let catalogFingerprint = "";
 let catalogRefreshInFlight = false;
 
-function escapeHtml(value = "") {
-  return String(value)
-    .replaceAll("&", "&amp;")
-    .replaceAll("<", "&lt;")
-    .replaceAll(">", "&gt;")
-    .replaceAll('"', "&quot;")
-    .replaceAll("'", "&#039;");
+function sanitizeCatalogText(value = "", maxLength = PRODUCT_TEXT_MAX_LENGTH) {
+  return String(value ?? "")
+    .replace(/[\u0000-\u001F\u007F]/g, " ")
+    .replace(/\s+/g, " ")
+    .trim()
+    .slice(0, maxLength);
+}
+
+function createElement(tagName, { className = "", text = "", attributes = {}, dataset = {} } = {}) {
+  const element = document.createElement(tagName);
+  if (className) element.className = className;
+  if (text) element.textContent = text;
+  Object.entries(attributes).forEach(([name, value]) => element.setAttribute(name, String(value)));
+  Object.entries(dataset).forEach(([name, value]) => { element.dataset[name] = String(value); });
+  return element;
 }
 
 function normalizeHeader(value = "") {
@@ -166,7 +201,7 @@ function normalizeCatalogCategory(value = "") {
 
 function sheetValue(row, headers, name) {
   const index = headers.indexOf(name);
-  return index >= 0 ? row[index]?.trim() || "" : "";
+  return index >= 0 ? sanitizeCatalogText(row[index]) : "";
 }
 
 function firstSheetValue(row, headers, names) {
@@ -180,14 +215,14 @@ function displayPrice(value) {
 }
 
 function imageUrls(value) {
-  const image = String(value || "").trim().match(/https?:\/\/[^\s"')]+/i)?.[0] || "";
+  const image = sanitizeCatalogText(value, 2_000).match(/https?:\/\/[^\s"')]+/i)?.[0] || "";
   if (!image) return [DEFAULT_PRODUCT_IMAGE];
 
   try {
     const url = new URL(image);
-    if (!["https:", "http:"].includes(url.protocol)) return [DEFAULT_PRODUCT_IMAGE];
+    if (url.protocol !== "https:") return [DEFAULT_PRODUCT_IMAGE];
 
-    const driveFileId = url.hostname.includes("drive.google.com")
+    const driveFileId = url.hostname === "drive.google.com"
       ? url.pathname.match(/\/d\/([^/]+)/)?.[1] || url.searchParams.get("id")
       : null;
     if (driveFileId) {
@@ -199,29 +234,48 @@ function imageUrls(value) {
       ];
     }
 
-    if (url.hostname === "github.com" && url.pathname.includes("/blob/")) {
+    if (url.hostname === "github.com" && url.pathname.startsWith(`${APP_IMAGE_REPOSITORY}blob/`)) {
       const [owner, repository, , branch, ...filePath] = url.pathname.split("/").filter(Boolean);
       if (owner && repository && branch && filePath.length) {
         return [`https://raw.githubusercontent.com/${owner}/${repository}/${branch}/${filePath.map(encodeURIComponent).join("/")}`];
       }
     }
 
-    return [url.href];
+    const isSameRepositoryRawImage = url.hostname === "raw.githubusercontent.com"
+      && url.pathname.startsWith(APP_IMAGE_REPOSITORY);
+    const isSameOriginImage = url.origin === APP_IMAGE_ORIGIN;
+    const isGoogleContentImage = url.hostname.endsWith(".googleusercontent.com");
+
+    if (isSameRepositoryRawImage || isSameOriginImage || isGoogleContentImage) return [url.href];
   } catch {
-    return [DEFAULT_PRODUCT_IMAGE];
+    // Una URL inválida o fuera de los orígenes permitidos no llega al DOM.
   }
+
+  return [DEFAULT_PRODUCT_IMAGE];
 }
 
-function safeImageUrl(value) {
-  return imageUrls(value)[0];
+function createProductImage(product, { alt = "", loading = "" } = {}) {
+  const sources = (product.imageFallbacks?.length ? product.imageFallbacks : [product.image || DEFAULT_PRODUCT_IMAGE])
+    .filter((source) => source === DEFAULT_PRODUCT_IMAGE || imageUrls(source)[0] === source);
+  const safeSources = sources.length ? sources : [DEFAULT_PRODUCT_IMAGE];
+  const image = createElement("img", {
+    className: "product-image product-image-main",
+    attributes: {
+      src: safeSources[0],
+      alt: sanitizeCatalogText(alt),
+      decoding: "async",
+      referrerpolicy: "no-referrer",
+    },
+    dataset: {
+      imageSources: JSON.stringify(safeSources),
+      imageSourceIndex: "0",
+    },
+  });
+  if (loading) image.loading = loading;
+  return image;
 }
 
-function productImageMarkup(product, attributes = "") {
-  const sources = product.imageFallbacks?.length ? product.imageFallbacks : [product.image || DEFAULT_PRODUCT_IMAGE];
-  return `<img class="product-image product-image-main" src="${escapeHtml(sources[0])}" data-image-sources="${escapeHtml(JSON.stringify(sources))}" data-image-source-index="0" referrerpolicy="no-referrer" ${attributes} />`;
-}
-
-function productDetailsMarkup(product) {
+function createProductDetails(product) {
   const omitted = new Set([
     "MODELO", "GB", "CAPACIDAD", "COLOR", "BATERIA", "DETALLES", "IMAGEN",
     "USD", "PESOS", "EFECTIVO", "TRANSFERENCIA", "3 CUOTAS FIJAS", "6 CUOTAS FIJAS",
@@ -235,10 +289,16 @@ function productDetailsMarkup(product) {
   const extras = Object.entries(product.sheetDetails || {})
     .filter(([key, value]) => value && !omitted.has(normalizeHeader(key)));
 
-  return [...core, ...extras]
-    .filter(([, value]) => value)
-    .map(([label, value]) => `<div><dt>${escapeHtml(label)}</dt><dd>${escapeHtml(value)}</dd></div>`)
-    .join("");
+  const fragment = document.createDocumentFragment();
+  [...core, ...extras].filter(([, value]) => value).forEach(([label, value]) => {
+    const item = document.createElement("div");
+    item.append(
+      createElement("dt", { text: sanitizeCatalogText(label, 80) }),
+      createElement("dd", { text: sanitizeCatalogText(value) }),
+    );
+    fragment.append(item);
+  });
+  return fragment;
 }
 
 function parseCatalogSheet(csv) {
@@ -262,11 +322,12 @@ function parseCatalogSheet(csv) {
     const hasModelColumn = normalizedRow.some((header) => ["MODELO", "NOMBRE", "EQUIPO"].includes(header));
     if (hasImageColumn && hasModelColumn) {
       headers = normalizedRow;
-      headerLabels = row.map((cell) => cell.trim());
+      headerLabels = row.map((cell) => sanitizeCatalogText(cell, 80));
       return;
     }
 
     if (!headers.length) return;
+    if (products.length >= CATALOG_MAX_PRODUCTS) return;
     const name = firstSheetValue(row, headers, ["MODELO", "NOMBRE", "EQUIPO"]);
     if (!name) return;
 
@@ -275,7 +336,7 @@ function parseCatalogSheet(csv) {
     const productCategory = categoryFromColumn || category;
     if (!productCategory) return;
     const sheetDetails = Object.fromEntries(
-      headers.map((header, index) => [headerLabels[index] || header, row[index]?.trim() || ""]),
+      headers.map((header, index) => [headerLabels[index] || header, sanitizeCatalogText(row[index])]),
     );
     const imageValue = firstSheetValue(row, headers, ["IMAGEN", "FOTO", "FOTOS", "URL IMAGEN", "LINK IMAGEN"]);
     const imageFallbacks = imageUrls(imageValue);
@@ -333,67 +394,126 @@ function formatUsdPrice(value) {
   return String(value || "A consultar").replace("US$", "$").replace(/\s+/g, " ").trim();
 }
 
-function priceTile(label, value, variant = "") {
-  return `<div class="price-tile ${variant}"><span>${label}</span><strong>${value}</strong></div>`;
+function createProductCard(product, index) {
+  const productName = sanitizeCatalogText(product.name);
+  const storage = sanitizeCatalogText(product.storage, 80);
+  const productCard = createElement("article", {
+    className: `product-card reveal-delay-${index % 3}`,
+    dataset: { productIndex: index },
+  });
+  productCard.setAttribute("data-reveal", "");
+
+  const detailButton = createElement("button", {
+    className: "product-detail-trigger",
+    attributes: {
+      type: "button",
+      "aria-label": `Ver ficha de ${productName} ${storage}`,
+    },
+    dataset: { selectProduct: index },
+  });
+
+  const productHeading = createElement("div", { className: "product-card-top" });
+  const headingCopy = document.createElement("div");
+  headingCopy.append(
+    createElement("h3", { text: `${productName} · ${storage}` }),
+    createElement("p", { text: sanitizeCatalogText(productMeta(product)) }),
+  );
+  productHeading.append(headingCopy);
+
+  const visual = createElement("div", { className: "product-visual" });
+  visual.append(createProductImage(product, {
+    alt: `${productName} ${sanitizeCatalogText(product.color, 80)} de ${storage}`,
+    loading: "lazy",
+  }));
+
+  const pricing = createElement("div", {
+    className: "product-pricing",
+    attributes: { "aria-label": `Precios de ${productName}` },
+  });
+  const usdPrice = createElement("p", { className: "product-usd-price" });
+  usdPrice.append(
+    document.createTextNode("Precio en USD: "),
+    createElement("strong", { text: sanitizeCatalogText(formatUsdPrice(product.usd), 80) }),
+  );
+  const paymentCopy = createElement("p", {
+    className: "product-payment-copy",
+    text: `Efectivo: ${sanitizeCatalogText(product.cash, 80)} · Transferencia: ${sanitizeCatalogText(product.transfer, 80)}`,
+  });
+  const gift = createElement("div", {
+    className: "product-gift",
+    attributes: { "aria-label": "Regalo incluido con la compra" },
+  });
+  gift.append(
+    createElement("span", { text: "🎁", attributes: { "aria-hidden": "true" } }),
+  );
+  const giftCopy = document.createElement("p");
+  giftCopy.append(
+    createElement("strong", { text: "Con tu compra te regalamos" }),
+    document.createTextNode("Cargador rápido + cable + funda + vidrio templado + garantía."),
+  );
+  gift.append(giftCopy);
+
+  const installmentPanel = createElement("div", { className: "installment-panel" });
+  installmentPanel.append(createElement("p", { className: "installment-heading", text: "Cuotas fijas en pesos" }));
+  const installmentRows = createElement("div", { className: "installment-rows" });
+  installmentOptions.forEach(({ label, key }) => {
+    const row = createElement("div", { className: "installment-row" });
+    row.append(
+      createElement("span", { text: `${label} de` }),
+      createElement("strong", { text: sanitizeCatalogText(product[key], 80) }),
+    );
+    installmentRows.append(row);
+  });
+  installmentPanel.append(installmentRows);
+  pricing.append(usdPrice, paymentCopy, gift, installmentPanel);
+
+  const footer = createElement("div", { className: "product-footer" });
+  const buyLink = createElement("a", {
+    className: "product-buy",
+    text: "Comprar",
+    attributes: {
+      href: whatsappUrl(buyMessage(product)),
+      target: "_blank",
+      rel: "noopener noreferrer",
+      referrerpolicy: "no-referrer",
+      "aria-label": `Comprar ${productName} ${storage}`,
+    },
+  });
+  const tradeInButton = createElement("button", {
+    className: "product-trade-in",
+    text: "Plan Canje",
+    attributes: { type: "button" },
+    dataset: { tradeInProduct: index },
+  });
+  footer.append(buyLink, tradeInButton);
+  productCard.append(detailButton, productHeading, visual, pricing, footer);
+  return productCard;
 }
 
-function installmentTile(label, value) {
-  return `<div class="installment-tile"><span>${label}</span><strong>${value}</strong><small>por cuota</small></div>`;
-}
-
-function productMarkup(product, index) {
-  const installments = installmentOptions
-    .map(({ label, key }) => `<div class="installment-row"><span>${label} de</span><strong>${escapeHtml(product[key])}</strong></div>`)
-    .join("");
-
-  return `
-    <article class="product-card" data-reveal data-product-index="${index}" style="--reveal-delay: ${(index % 3) * 55}ms">
-      <button class="product-detail-trigger" type="button" data-select-product="${index}" aria-label="Ver ficha de ${escapeHtml(product.name)} ${escapeHtml(product.storage)}"></button>
-      <div class="product-card-top">
-        <div><h3>${escapeHtml(product.name)} · ${escapeHtml(product.storage)}</h3><p>${escapeHtml(productMeta(product))}</p></div>
-      </div>
-      <div class="product-visual">
-        ${productImageMarkup(product, `alt="${escapeHtml(`${product.name} ${product.color} de ${product.storage}`)}" loading="lazy" decoding="async"`)}
-      </div>
-      <div class="product-pricing" aria-label="Precios de ${escapeHtml(product.name)}">
-        <p class="product-usd-price">Precio en USD: <strong>${escapeHtml(formatUsdPrice(product.usd))}</strong></p>
-        <p class="product-payment-copy">Efectivo: ${escapeHtml(product.cash)} · Transferencia: ${escapeHtml(product.transfer)}</p>
-        <div class="product-gift" aria-label="Regalo incluido con la compra">
-          <span aria-hidden="true">🎁</span>
-          <p><strong>Con tu compra te regalamos</strong>Cargador rápido + cable + funda + vidrio templado + garantía.</p>
-        </div>
-        <div class="installment-panel">
-          <p class="installment-heading">Cuotas fijas en pesos</p>
-          <div class="installment-rows">${installments}</div>
-        </div>
-      </div>
-      <div class="product-footer">
-        <a class="product-buy" href="${whatsappUrl(buyMessage(product))}" target="_blank" rel="noreferrer" aria-label="Comprar ${escapeHtml(product.name)} ${escapeHtml(product.storage)}">Comprar</a>
-        <button class="product-trade-in" type="button" data-trade-in-product="${index}">Plan Canje</button>
-      </div>
-    </article>`;
-}
-
-function catalogGroupMarkup(group) {
+function createCatalogGroup(group) {
   const products = catalog
     .map((product, index) => ({ product, index }))
     .filter(({ product }) => product.category === group.category);
 
-  if (!products.length) return "";
+  if (!products.length) return null;
 
-  return `
-    <section class="catalog-group" id="${group.id}" aria-labelledby="${group.id}-title">
-      <div class="catalog-group-heading" data-reveal>
-        <div>
-          <p class="eyebrow">${group.eyebrow}</p>
-          <h3 id="${group.id}-title">${group.title}</h3>
-        </div>
-        <p>${group.description}</p>
-      </div>
-      <div class="catalog-grid">
-        ${products.map(({ product, index }) => productMarkup(product, index)).join("")}
-      </div>
-    </section>`;
+  const groupElement = createElement("section", {
+    className: "catalog-group",
+    attributes: { id: group.id, "aria-labelledby": `${group.id}-title` },
+  });
+  const heading = createElement("div", { className: "catalog-group-heading" });
+  heading.setAttribute("data-reveal", "");
+  const headingTitle = document.createElement("div");
+  headingTitle.append(
+    createElement("p", { className: "eyebrow", text: group.eyebrow }),
+    createElement("h3", { text: group.title, attributes: { id: `${group.id}-title` } }),
+  );
+  heading.append(headingTitle, createElement("p", { text: group.description }));
+
+  const grid = createElement("div", { className: "catalog-grid" });
+  products.forEach(({ product, index }) => grid.append(createProductCard(product, index)));
+  groupElement.append(heading, grid);
+  return groupElement;
 }
 
 async function fetchLiveCatalog() {
@@ -408,7 +528,9 @@ async function fetchLiveCatalog() {
     const response = await fetch(requestUrl, { cache: "no-store", signal: controller.signal });
     if (!response.ok) throw new Error(`Google Sheets respondió ${response.status}`);
 
-    const liveCatalog = parseCatalogSheet(await response.text());
+    const csv = await response.text();
+    if (csv.length > CATALOG_MAX_BYTES) throw new Error("La planilla supera el tamaño permitido");
+    const liveCatalog = parseCatalogSheet(csv);
     if (!liveCatalog.length) throw new Error("La planilla no devolvió equipos");
     return liveCatalog;
   } finally {
@@ -441,7 +563,8 @@ async function loadCatalog() {
   catalogFingerprint = nextFingerprint;
   catalog = nextCatalog;
 
-  catalogGroups.innerHTML = catalogCategories.map(catalogGroupMarkup).join("");
+  const groups = catalogCategories.map(createCatalogGroup).filter(Boolean);
+  catalogGroups.replaceChildren(...groups);
   catalogGroups.setAttribute("aria-busy", "false");
   catalogStatus.classList.add("is-ready");
   catalogStatus.hidden = true;
@@ -531,23 +654,25 @@ function setupTradeInForm() {
   form.addEventListener("submit", (event) => {
     event.preventDefault();
     const values = new FormData(form);
-    const details = values.get("details").trim() || "Sin detalles adicionales informados";
+    const fieldValue = (name, maxLength = PRODUCT_TEXT_MAX_LENGTH) => sanitizeCatalogText(values.get(name), maxLength);
+    const details = fieldValue("details") || "Sin detalles adicionales informados";
     const desiredProduct = selectedTradeInProduct
       ? `Me interesa el ${selectedTradeInProduct.name} · ${selectedTradeInProduct.storage}.`
       : "Me interesa hacer un Plan Canje.";
-    const message = `Hola iPhone Style!\n${desiredProduct}\n\nPLAN CANJE — equipo a entregar\n📱 Modelo: ${values.get("model")}\n💾 Capacidad: ${values.get("storage")}\n🔋 Batería: ${values.get("battery")}%\n✨ Estado: ${values.get("condition")}\n📝 Detalles: ${details}\n\n¿Me pasarían la diferencia a abonar?`;
-    window.open(whatsappUrl(message), "_blank", "noopener");
+    const message = `Hola iPhone Style!\n${desiredProduct}\n\nPLAN CANJE — equipo a entregar\n📱 Modelo: ${fieldValue("model", 80)}\n💾 Capacidad: ${fieldValue("storage", 80)}\n🔋 Batería: ${fieldValue("battery", 12)}%\n✨ Estado: ${fieldValue("condition", 120)}\n📝 Detalles: ${details}\n\n¿Me pasarían la diferencia a abonar?`;
+    window.open(whatsappUrl(message), "_blank", "noopener,noreferrer");
   });
 }
 
 function setupModals() {
   document.querySelectorAll("[data-open-modal]").forEach((trigger) => {
     trigger.addEventListener("click", () => {
-      if (trigger.dataset.openModal === "trade-in-dialog") {
+      const modalId = trigger.dataset.openModal;
+      if (modalId === "trade-in-dialog") {
         openTradeIn();
         return;
       }
-      openModal(document.querySelector(`#${trigger.dataset.openModal}`));
+      if (modalId === "product-dialog") openModal(document.getElementById(modalId));
     });
   });
 
@@ -575,16 +700,27 @@ function showProduct(product) {
   selectedTradeInProduct = product;
   dialog.querySelector("#product-dialog-title").textContent = `${product.name} · ${product.storage}`;
   dialog.querySelector("#product-dialog-copy").textContent = "Con la compra de cualquier equipo te llevás un cargador de carga rápida + cable + funda + vidrio templado + una garantía de regalo. 🎁 Compra seguro y tranquilo en iPhone Style.";
-  dialog.querySelector("#product-modal-visual").innerHTML = productImageMarkup(product, `alt="${escapeHtml(`${product.name} ${product.color} de ${product.storage}`)}"`);
-  dialog.querySelector("#product-dialog-specs").innerHTML = productDetailsMarkup(product);
+  dialog.querySelector("#product-modal-visual").replaceChildren(createProductImage(product, {
+    alt: `${product.name} ${product.color} de ${product.storage}`,
+  }));
+  dialog.querySelector("#product-dialog-specs").replaceChildren(createProductDetails(product));
   openModal(dialog);
 }
 
 function setupImageFallbacks() {
   document.addEventListener("error", (event) => {
+    if (!(event.target instanceof Element)) return;
     const image = event.target.closest(".product-image");
     if (!image) return;
-    const sources = JSON.parse(image.dataset.imageSources || "[]");
+    let sources = [];
+    try {
+      sources = JSON.parse(image.dataset.imageSources || "[]");
+    } catch {
+      sources = [];
+    }
+    sources = Array.isArray(sources)
+      ? sources.filter((source) => source === DEFAULT_PRODUCT_IMAGE || imageUrls(source)[0] === source)
+      : [];
     const nextIndex = Number(image.dataset.imageSourceIndex || 0) + 1;
     if (sources[nextIndex]) {
       image.dataset.imageSourceIndex = String(nextIndex);
@@ -600,13 +736,15 @@ function setupCatalogEvents() {
   catalogGroups.addEventListener("click", (event) => {
     const tradeInButton = event.target.closest("[data-trade-in-product]");
     if (tradeInButton) {
-      openTradeIn(catalog[Number(tradeInButton.dataset.tradeInProduct)]);
+      const product = catalog[Number(tradeInButton.dataset.tradeInProduct)];
+      if (product) openTradeIn(product);
       return;
     }
 
     const button = event.target.closest("[data-select-product]");
     if (!button) return;
-    showProduct(catalog[Number(button.dataset.selectProduct)]);
+    const product = catalog[Number(button.dataset.selectProduct)];
+    if (product) showProduct(product);
   });
 }
 
@@ -615,14 +753,9 @@ function setupMagneticButtons() {
   if (!canHover || prefersReducedMotion) return;
 
   document.querySelectorAll("[data-magnetic]").forEach((button) => {
-    button.addEventListener("pointermove", (event) => {
-      const bounds = button.getBoundingClientRect();
-      const x = ((event.clientX - bounds.left) / bounds.width - 0.5) * 8;
-      const y = ((event.clientY - bounds.top) / bounds.height - 0.5) * 8;
-      button.style.transform = `translate3d(${x}px, ${y}px, 0)`;
-    });
+    button.addEventListener("pointerenter", () => button.classList.add("is-magnetic-active"));
     button.addEventListener("pointerleave", () => {
-      button.style.transform = "translate3d(0, 0, 0)";
+      button.classList.remove("is-magnetic-active");
     });
   });
 }
@@ -632,26 +765,8 @@ function setupHeroDeviceMotion() {
   const canHover = window.matchMedia("(hover: hover) and (pointer: fine)").matches;
   if (!stage || !canHover || prefersReducedMotion) return;
 
-  let resetTimer;
-
-  stage.addEventListener("pointermove", (event) => {
-    window.clearTimeout(resetTimer);
-    const bounds = stage.getBoundingClientRect();
-    const x = (event.clientX - bounds.left) / bounds.width - 0.5;
-    const y = (event.clientY - bounds.top) / bounds.height - 0.5;
-    const rotateX = -y * 2.8;
-    const rotateY = x * 3.6;
-
-    stage.style.willChange = "transform";
-    stage.style.transform = `perspective(1100px) rotateX(${rotateX}deg) rotateY(${rotateY}deg) translate3d(${x * 8}px, ${y * 7}px, 0)`;
-  });
-
-  stage.addEventListener("pointerleave", () => {
-    stage.style.transform = "";
-    resetTimer = window.setTimeout(() => {
-      stage.style.willChange = "";
-    }, 280);
-  });
+  stage.addEventListener("pointerenter", () => stage.classList.add("is-pointer-active"));
+  stage.addEventListener("pointerleave", () => stage.classList.remove("is-pointer-active"));
 }
 
 function setupHeroScrollDepth() {
@@ -659,33 +774,14 @@ function setupHeroScrollDepth() {
   const copy = document.querySelector("[data-hero-copy-parallax]");
   if (!layer || !copy || prefersReducedMotion) return;
 
-  let frameId = 0;
-  const updateDepth = () => {
-    frameId = 0;
-    const hero = layer.closest(".hero-device");
-    const bounds = hero.getBoundingClientRect();
-    const viewportHeight = window.innerHeight || document.documentElement.clientHeight;
-    if (bounds.bottom < 0 || bounds.top > viewportHeight) {
-      layer.style.transform = "";
-      copy.style.transform = "";
-      layer.style.willChange = "";
-      copy.style.willChange = "";
-      return;
-    }
-
-    const progress = Math.max(0, Math.min(1, -bounds.top / Math.max(bounds.height, viewportHeight)));
-    layer.style.willChange = "transform";
-    copy.style.willChange = "transform";
-    layer.style.transform = `translate3d(0, ${Math.round(progress * 76)}px, 0) scale(${1 - progress * 0.055})`;
-    copy.style.transform = `translate3d(0, ${Math.round(progress * -44)}px, 0)`;
-  };
-  const scheduleDepth = () => {
-    if (!frameId) frameId = window.requestAnimationFrame(updateDepth);
-  };
-
-  window.addEventListener("scroll", scheduleDepth, { passive: true });
-  window.addEventListener("resize", scheduleDepth, { passive: true });
-  scheduleDepth();
+  const hero = layer.closest(".hero-device");
+  if (!hero || !("IntersectionObserver" in window)) return;
+  const observer = new IntersectionObserver(([entry]) => {
+    const isPastHeroStart = entry.boundingClientRect.top < 0 && entry.isIntersecting;
+    layer.classList.toggle("is-scroll-depth-active", isPastHeroStart);
+    copy.classList.toggle("is-scroll-depth-active", isPastHeroStart);
+  }, { threshold: [0, 0.75] });
+  observer.observe(hero);
 }
 
 function setupScrollScenes() {
@@ -712,14 +808,9 @@ function setupTradeInMediaMotion() {
   const canHover = window.matchMedia("(hover: hover) and (pointer: fine)").matches;
   if (!media || !image || !canHover || prefersReducedMotion) return;
 
-  media.addEventListener("pointermove", (event) => {
-    const bounds = media.getBoundingClientRect();
-    const x = (event.clientX - bounds.left) / bounds.width - 0.5;
-    const y = (event.clientY - bounds.top) / bounds.height - 0.5;
-    image.style.transform = `scale(1.035) translate3d(${x * 10}px, ${y * 8}px, 0)`;
-  });
+  media.addEventListener("pointerenter", () => image.classList.add("is-pointer-active"));
   media.addEventListener("pointerleave", () => {
-    image.style.transform = "";
+    image.classList.remove("is-pointer-active");
   });
 }
 
@@ -837,9 +928,15 @@ window.addEventListener("DOMContentLoaded", () => {
   document.querySelector("#current-year").textContent = new Date().getFullYear();
   document.querySelectorAll("[data-whatsapp]").forEach((link) => {
     link.href = whatsappUrl(link.dataset.whatsapp);
+    link.target = "_blank";
+    link.rel = "noopener noreferrer";
+    link.referrerPolicy = "no-referrer";
   });
   document.querySelectorAll("[data-store-whatsapp]").forEach((link) => {
     link.href = whatsappUrl(storeAppointmentMessage(link.dataset.storeWhatsapp));
+    link.target = "_blank";
+    link.rel = "noopener noreferrer";
+    link.referrerPolicy = "no-referrer";
   });
   observeReveals();
   setupModals();
