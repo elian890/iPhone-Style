@@ -723,7 +723,91 @@ function setupTradeInMediaMotion() {
   });
 }
 
-function setupNavigation() {
+function setupCatalogMenu() {
+  const menu = document.querySelector("[data-catalog-menu]");
+  const trigger = document.querySelector("[data-catalog-menu-trigger]");
+  const panel = document.querySelector("#catalog-menu");
+  if (!menu || !trigger || !panel) return () => {};
+
+  let keyboardTriggered = false;
+
+  function setOpen(isOpen, { instant = false, focusTrigger = false } = {}) {
+    if (instant) menu.classList.add("is-instant");
+
+    menu.classList.toggle("is-open", isOpen);
+    trigger.setAttribute("aria-expanded", String(isOpen));
+    panel.setAttribute("aria-hidden", String(!isOpen));
+    panel.inert = !isOpen;
+
+    if (focusTrigger) trigger.focus();
+    if (instant) {
+      window.requestAnimationFrame(() => window.requestAnimationFrame(() => menu.classList.remove("is-instant")));
+    }
+  }
+
+  function goToCategory(id) {
+    const hash = `#${id}`;
+    if (window.location.hash !== hash) window.history.pushState(null, "", hash);
+
+    const scrollToGroup = () => {
+      const group = document.getElementById(id);
+      if (!group) return false;
+      group.scrollIntoView({ behavior: prefersReducedMotion ? "auto" : "smooth", block: "start" });
+      return true;
+    };
+
+    if (scrollToGroup()) return;
+
+    const observer = new MutationObserver(() => {
+      if (scrollToGroup()) observer.disconnect();
+    });
+    observer.observe(catalogGroups, { childList: true, subtree: true });
+    window.setTimeout(() => observer.disconnect(), CATALOG_REQUEST_TIMEOUT);
+  }
+
+  trigger.addEventListener("click", () => {
+    const isOpen = trigger.getAttribute("aria-expanded") === "true";
+    setOpen(!isOpen, { instant: keyboardTriggered });
+    keyboardTriggered = false;
+  });
+
+  trigger.addEventListener("keydown", (event) => {
+    if (event.key === "ArrowDown") {
+      event.preventDefault();
+      setOpen(true, { instant: true });
+      panel.querySelector("a")?.focus();
+    } else if (event.key === "Escape") {
+      setOpen(false, { instant: true, focusTrigger: true });
+    } else if (event.key === "Enter" || event.key === " ") {
+      keyboardTriggered = true;
+    }
+  });
+
+  panel.querySelectorAll("[data-catalog-category]").forEach((link) => {
+    link.addEventListener("click", (event) => {
+      const id = link.dataset.catalogCategory;
+      if (!id) return;
+      event.preventDefault();
+      setOpen(false);
+      goToCategory(id);
+    });
+  });
+
+  document.addEventListener("pointerdown", (event) => {
+    if (!menu.contains(event.target)) setOpen(false);
+  });
+
+  document.addEventListener("keydown", (event) => {
+    if (event.key === "Escape" && trigger.getAttribute("aria-expanded") === "true") {
+      setOpen(false, { instant: true, focusTrigger: true });
+    }
+  });
+
+  setOpen(false, { instant: true });
+  return () => setOpen(false, { instant: true });
+}
+
+function setupNavigation(closeCatalogMenu) {
   const toggle = document.querySelector(".nav-toggle");
   const links = document.querySelector(".nav-links");
   if (!toggle || !links) return;
@@ -735,10 +819,11 @@ function setupNavigation() {
     links.classList.toggle("is-open", !isOpen);
   });
 
-  links.querySelectorAll("a, button").forEach((item) => item.addEventListener("click", () => {
+  links.querySelectorAll("a, button:not([data-catalog-menu-trigger])").forEach((item) => item.addEventListener("click", () => {
     toggle.setAttribute("aria-expanded", "false");
     toggle.setAttribute("aria-label", "Abrir menú");
     links.classList.remove("is-open");
+    closeCatalogMenu?.();
   }));
 }
 
@@ -766,7 +851,8 @@ window.addEventListener("DOMContentLoaded", () => {
   setupHeroScrollDepth();
   setupScrollScenes();
   setupTradeInMediaMotion();
-  setupNavigation();
+  const closeCatalogMenu = setupCatalogMenu();
+  setupNavigation(closeCatalogMenu);
   loadCatalog();
   window.setInterval(() => {
     if (!document.hidden) loadCatalog();
