@@ -517,3 +517,105 @@ img { max-width: 100%; }
   .nav-catalog-trigger, .nav-catalog-trigger svg, .catalog-nav-popover, .catalog-nav-option { transition-duration: 1ms !important; }
   .catalog-nav-option:active { transform: none; }
 }
+
+/* Fotos reales de las sucursales: cada tarjeta funciona como una cita directa. */
+.store-card {
+  display: grid;
+  grid-template-columns: minmax(12.75rem, .86fr) minmax(0, 1.14fr);
+  min-height: clamp(23rem, 34vw, 27rem);
+  overflow: hidden;
+  border-color: rgba(255, 255, 255, .14);
+  border-radius: 1rem;
+  background: #18070b;
+}
+.store-photo {
+  min-width: 0;
+  overflow: hidden;
+  background: #120508;
+}
+.store-photo img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: 50% 50%;
+  transition: transform 240ms var(--ease-out);
+}
+.store-card--rosario .store-photo img { object-position: 50% 53%; }
+.store-card-content {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  padding: clamp(1.35rem, 3vw, 2rem);
+  background: linear-gradient(145deg, rgba(39, 7, 13, .98), rgba(16, 4, 7, .98));
+}
+.store-card-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: .75rem;
+  padding-bottom: 1.1rem;
+  border-bottom: 1px solid rgba(255, 255, 255, .1);
+}
+.store-card-top span:first-child {
+  color: var(--muted);
+  font-size: .64rem;
+  font-weight: 700;
+  letter-spacing: .12em;
+  text-transform: uppercase;
+}
+.store-radius {
+  color: #f2dadd;
+  font-size: .68rem;
+  font-weight: 700;
+  letter-spacing: .02em;
+}
+.store-card-body { padding-top: clamp(1.45rem, 4vw, 2.2rem); }
+.store-card-body h3 {
+  margin: 0;
+  color: var(--text);
+  font-size: clamp(1.8rem, 3vw, 2.45rem);
+  letter-spacing: -.055em;
+  line-height: .98;
+}
+.store-card-body p {
+  max-width: 25rem;
+  margin: .85rem 0 0;
+  color: var(--muted-strong);
+  font-size: .86rem;
+  line-height: 1.6;
+}
+.store-card-action {
+  display: inline-flex;
+  align-items: center;
+  gap: .45rem;
+  margin-top: auto;
+  padding-top: 1.65rem;
+  color: var(--text);
+  font-size: .72rem;
+  font-weight: 700;
+  letter-spacing: -.01em;
+}
+.store-card-action svg {
+  width: .9rem;
+  height: .9rem;
+  fill: none;
+  stroke: var(--brand-red-bright);
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  stroke-width: 1.45;
+  transition: transform 160ms var(--ease-out);
+}
+@media (hover: hover) and (pointer: fine) {
+  .store-card:hover .store-photo img { transform: scale(1.035); }
+  .store-card:hover .store-card-action svg { transform: translateX(.2rem); }
+}
+@media (max-width: 48rem) {
+  .store-card { grid-template-columns: 1fr; min-height: 0; }
+  .store-photo { aspect-ratio: 3 / 4; max-height: 33rem; }
+  .store-card-content { min-height: 14rem; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .store-photo img, .store-card-action svg { transition-duration: 1ms; }
+  .store-card:hover .store-photo img, .store-card:hover .store-card-action svg { transform: none; }
+}
