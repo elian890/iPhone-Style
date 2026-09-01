@@ -876,6 +876,24 @@ function setupHeroScrollDepth() {
   observer.observe(hero);
 }
 
+function setupHeaderState() {
+  const header = document.querySelector(".site-header");
+  if (!header) return;
+
+  let pendingFrame = null;
+  const updateHeader = () => {
+    pendingFrame = null;
+    header.classList.toggle("is-compact", window.scrollY > 28);
+  };
+  const requestUpdate = () => {
+    if (pendingFrame !== null) return;
+    pendingFrame = window.requestAnimationFrame(updateHeader);
+  };
+
+  updateHeader();
+  window.addEventListener("scroll", requestUpdate, { passive: true });
+}
+
 function setupScrollScenes() {
   const scenes = document.querySelectorAll("[data-scroll-scene]");
   if (!scenes.length || prefersReducedMotion || !("IntersectionObserver" in window)) return;
@@ -1106,6 +1124,7 @@ window.addEventListener("DOMContentLoaded", () => {
   setupMagneticButtons();
   setupHeroDeviceMotion();
   setupHeroScrollDepth();
+  setupHeaderState();
   setupScrollScenes();
   setupTradeInMediaMotion();
   const closeCatalogMenu = setupCatalogMenu();
