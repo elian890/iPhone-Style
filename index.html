@@ -14,8 +14,8 @@
     />
     <meta name="theme-color" content="#110306" />
     <title>iPhone Style — Elegí tu próximo iPhone</title>
-    <link rel="stylesheet" href="styles.css?v=20260829-security-hardening-v2" />
-    <script src="app.js?v=20260829-security-hardening-v2" defer></script>
+    <link rel="stylesheet" href="styles.css?v=catalog-models-v1" />
+    <script src="app.js?v=catalog-models-v1" defer></script>
   </head>
   <body>
     <div class="site-loader" id="site-loader" role="status" aria-live="polite">
@@ -50,19 +50,50 @@
               <span>Catálogo</span>
               <svg viewBox="0 0 12 12" aria-hidden="true"><path d="m3 4.5 3 3 3-3" /></svg>
             </button>
-            <div class="catalog-nav-popover" id="catalog-menu" aria-label="Categorías del catálogo" aria-hidden="true">
-              <a class="catalog-nav-option" href="#nuevos-sellados" data-catalog-category="nuevos-sellados">
-                <span><strong>Nuevos</strong><small>En caja sellada</small></span>
-                <i aria-hidden="true"></i>
-              </a>
-              <a class="catalog-nav-option" href="#usados-premium" data-catalog-category="usados-premium">
-                <span><strong>Usados premium</strong><small>Selección verificada</small></span>
-                <i aria-hidden="true"></i>
-              </a>
-              <a class="catalog-nav-option" href="#outlet" data-catalog-category="outlet">
-                <span><strong>Outlet</strong><small>Oportunidades seleccionadas</small></span>
-                <i aria-hidden="true"></i>
-              </a>
+            <div class="catalog-nav-popover" id="catalog-menu" aria-label="Explorar catálogo" aria-hidden="true">
+              <div class="catalog-nav-tabs" role="tablist" aria-label="Categorías del catálogo">
+                <button class="catalog-nav-category" id="catalog-tab-nuevos-sellados" type="button" role="tab" aria-selected="true" aria-controls="catalog-panel-nuevos-sellados" tabindex="0" data-catalog-category="nuevos-sellados">
+                  <span><strong>Nuevos</strong><small>En caja sellada</small></span>
+                  <i aria-hidden="true"></i>
+                </button>
+                <button class="catalog-nav-category" id="catalog-tab-usados-premium" type="button" role="tab" aria-selected="false" aria-controls="catalog-panel-usados-premium" tabindex="-1" data-catalog-category="usados-premium">
+                  <span><strong>Usados premium</strong><small>Selección verificada</small></span>
+                  <i aria-hidden="true"></i>
+                </button>
+                <button class="catalog-nav-category" id="catalog-tab-outlet" type="button" role="tab" aria-selected="false" aria-controls="catalog-panel-outlet" tabindex="-1" data-catalog-category="outlet">
+                  <span><strong>Outlet</strong><small>Oportunidades seleccionadas</small></span>
+                  <i aria-hidden="true"></i>
+                </button>
+              </div>
+
+              <div class="catalog-nav-models">
+                <section class="catalog-nav-model-panel" id="catalog-panel-nuevos-sellados" role="tabpanel" aria-labelledby="catalog-tab-nuevos-sellados" data-catalog-panel="nuevos-sellados">
+                  <p class="catalog-nav-panel-title">Nuevos en caja sellada</p>
+                  <a class="catalog-nav-all" href="#nuevos-sellados" data-catalog-target="nuevos-sellados">Ver todos los nuevos <span aria-hidden="true">→</span></a>
+                  <div class="catalog-nav-model-list">
+                    <a href="#nuevos-sellados-iphone-17" data-catalog-target="nuevos-sellados-iphone-17">iPhone 17</a>
+                    <a href="#nuevos-sellados-iphone-17-pro" data-catalog-target="nuevos-sellados-iphone-17-pro">iPhone 17 Pro</a>
+                    <a href="#nuevos-sellados-iphone-17-pro-max" data-catalog-target="nuevos-sellados-iphone-17-pro-max">iPhone 17 Pro Max</a>
+                  </div>
+                </section>
+
+                <section class="catalog-nav-model-panel" id="catalog-panel-usados-premium" role="tabpanel" aria-labelledby="catalog-tab-usados-premium" data-catalog-panel="usados-premium" hidden>
+                  <p class="catalog-nav-panel-title">Elegí por generación</p>
+                  <a class="catalog-nav-all" href="#usados-premium" data-catalog-target="usados-premium">Ver todos los usados <span aria-hidden="true">→</span></a>
+                  <div class="catalog-nav-model-list">
+                    <a href="#usados-premium-iphone-13" data-catalog-target="usados-premium-iphone-13">iPhone 13</a>
+                    <a href="#usados-premium-iphone-14" data-catalog-target="usados-premium-iphone-14">iPhone 14</a>
+                    <a href="#usados-premium-iphone-15" data-catalog-target="usados-premium-iphone-15">iPhone 15</a>
+                    <a href="#usados-premium-iphone-16" data-catalog-target="usados-premium-iphone-16">iPhone 16</a>
+                    <a href="#usados-premium-iphone-17" data-catalog-target="usados-premium-iphone-17">iPhone 17</a>
+                  </div>
+                </section>
+
+                <section class="catalog-nav-model-panel" id="catalog-panel-outlet" role="tabpanel" aria-labelledby="catalog-tab-outlet" data-catalog-panel="outlet" hidden>
+                  <p class="catalog-nav-panel-title">Equipos con detalle informado</p>
+                  <a class="catalog-nav-all catalog-nav-all--outlet" href="#outlet" data-catalog-target="outlet">Ver oportunidades del outlet <span aria-hidden="true">→</span></a>
+                </section>
+              </div>
             </div>
           </div>
           <a href="#tiendas">Tiendas</a>

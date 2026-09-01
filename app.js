@@ -108,6 +108,23 @@ const catalogCategories = [
   },
 ];
 
+// La estructura se mantiene separada de los productos: cada actualización de la
+// planilla se agrupa de nuevo sin que haya que tocar la navegación.
+const catalogModelSections = {
+  "nuevos-sellados": [
+    { id: "nuevos-sellados-iphone-17", label: "iPhone 17", family: "IPHONE 17", kind: "base" },
+    { id: "nuevos-sellados-iphone-17-pro", label: "iPhone 17 Pro", family: "IPHONE 17 PRO", kind: "pro" },
+    { id: "nuevos-sellados-iphone-17-pro-max", label: "iPhone 17 Pro Max", family: "IPHONE 17 PRO MAX", kind: "exact" },
+  ],
+  "usados-premium": [
+    { id: "usados-premium-iphone-13", label: "iPhone 13", family: "IPHONE 13", kind: "generation" },
+    { id: "usados-premium-iphone-14", label: "iPhone 14", family: "IPHONE 14", kind: "generation" },
+    { id: "usados-premium-iphone-15", label: "iPhone 15", family: "IPHONE 15", kind: "generation" },
+    { id: "usados-premium-iphone-16", label: "iPhone 16", family: "IPHONE 16", kind: "generation" },
+    { id: "usados-premium-iphone-17", label: "iPhone 17", family: "IPHONE 17", kind: "generation" },
+  ],
+};
+
 const installmentOptions = [
   { label: "3 cuotas", key: "installment" },
   { label: "6 cuotas", key: "installment6" },
@@ -490,6 +507,50 @@ function createProductCard(product, index) {
   return productCard;
 }
 
+function matchesCatalogModel(product, section) {
+  const productName = normalizeHeader(product.name);
+  if (!productName) return false;
+
+  if (section.kind === "generation") {
+    return productName === section.family || productName.startsWith(`${section.family} `);
+  }
+
+  if (section.kind === "base") {
+    return productName === section.family
+      || (productName.startsWith(`${section.family} `) && !productName.startsWith(`${section.family} PRO`));
+  }
+
+  if (section.kind === "pro") {
+    return productName === section.family
+      || (productName.startsWith(`${section.family} `) && !productName.startsWith(`${section.family} MAX`));
+  }
+
+  return productName === section.family || productName.startsWith(`${section.family} `);
+}
+
+function createCatalogGrid(products) {
+  const grid = createElement("div", { className: "catalog-grid" });
+  products.forEach(({ product, index }) => grid.append(createProductCard(product, index)));
+  return grid;
+}
+
+function createCatalogModelGroup(section, products, description) {
+  const modelGroup = createElement("section", {
+    className: "catalog-model-group",
+    attributes: { id: section.id, "aria-labelledby": `${section.id}-title` },
+  });
+  const heading = createElement("div", { className: "catalog-model-heading" });
+  heading.setAttribute("data-reveal", "");
+  heading.append(
+    createElement("h4", { text: section.label, attributes: { id: `${section.id}-title` } }),
+    createElement("p", { text: description }),
+  );
+  modelGroup.append(heading);
+  modelGroup.append(createCatalogGrid(products));
+
+  return modelGroup;
+}
+
 function createCatalogGroup(group) {
   const products = catalog
     .map((product, index) => ({ product, index }))
@@ -509,10 +570,40 @@ function createCatalogGroup(group) {
     createElement("h3", { text: group.title, attributes: { id: `${group.id}-title` } }),
   );
   heading.append(headingTitle, createElement("p", { text: group.description }));
+  groupElement.append(heading);
 
-  const grid = createElement("div", { className: "catalog-grid" });
-  products.forEach(({ product, index }) => grid.append(createProductCard(product, index)));
-  groupElement.append(heading, grid);
+  const modelSections = catalogModelSections[group.id];
+  if (!modelSections) {
+    groupElement.append(createCatalogGrid(products));
+    return groupElement;
+  }
+
+  const modelGroups = createElement("div", { className: "catalog-model-groups" });
+  const assignedIndexes = new Set();
+  modelSections.forEach((section) => {
+    const matchingProducts = products.filter(({ product, index }) => {
+      const isMatch = matchesCatalogModel(product, section);
+      if (isMatch) assignedIndexes.add(index);
+      return isMatch;
+    });
+    const modelDescription = group.id === "nuevos-sellados"
+      ? "Elegí la configuración que más te gusta."
+      : "Equipos disponibles de esta generación.";
+    if (matchingProducts.length) {
+      modelGroups.append(createCatalogModelGroup(section, matchingProducts, modelDescription));
+    }
+  });
+
+  const ungroupedProducts = products.filter(({ index }) => !assignedIndexes.has(index));
+  if (ungroupedProducts.length) {
+    const extraSection = {
+      id: `${group.id}-otros-modelos`,
+      label: group.id === "nuevos-sellados" ? "Más equipos nuevos" : "Más usados premium",
+    };
+    modelGroups.append(createCatalogModelGroup(extraSection, ungroupedProducts, "Otros equipos disponibles en esta selección."));
+  }
+
+  groupElement.append(modelGroups);
   return groupElement;
 }
 
@@ -569,6 +660,7 @@ async function loadCatalog() {
   catalogStatus.classList.add("is-ready");
   catalogStatus.hidden = true;
   observeReveals(catalogGroups.querySelectorAll("[data-reveal]"));
+  document.dispatchEvent(new CustomEvent("catalog:updated"));
 }
 
 function observeReveals(elements = document.querySelectorAll("[data-reveal]")) {
@@ -820,6 +912,9 @@ function setupCatalogMenu() {
   const panel = document.querySelector("#catalog-menu");
   if (!menu || !trigger || !panel) return () => {};
 
+  const categoryTabs = [...panel.querySelectorAll("[data-catalog-category]")];
+  const modelPanels = [...panel.querySelectorAll("[data-catalog-panel]")];
+
   let keyboardTriggered = false;
 
   function setOpen(isOpen, { instant = false, focusTrigger = false } = {}) {
@@ -836,7 +931,43 @@ function setupCatalogMenu() {
     }
   }
 
-  function goToCategory(id) {
+  function selectCategory(id, { focus = false } = {}) {
+    const selectedTab = categoryTabs.find((tab) => tab.dataset.catalogCategory === id);
+    const selectedPanel = modelPanels.find((modelPanel) => modelPanel.dataset.catalogPanel === id);
+    if (!selectedTab || selectedTab.hidden || !selectedPanel) return;
+
+    categoryTabs.forEach((tab) => {
+      const isSelected = tab === selectedTab;
+      tab.setAttribute("aria-selected", String(isSelected));
+      tab.tabIndex = isSelected ? 0 : -1;
+    });
+    modelPanels.forEach((modelPanel) => {
+      modelPanel.hidden = modelPanel !== selectedPanel;
+    });
+    if (focus) selectedTab.focus();
+  }
+
+  function availableCategoryTabs() {
+    return categoryTabs.filter((tab) => !tab.hidden);
+  }
+
+  function syncAvailability() {
+    categoryTabs.forEach((tab) => {
+      tab.hidden = !document.getElementById(tab.dataset.catalogCategory);
+    });
+
+    panel.querySelectorAll("[data-catalog-target]").forEach((link) => {
+      link.hidden = !document.getElementById(link.dataset.catalogTarget);
+    });
+
+    const selectedTab = categoryTabs.find((tab) => tab.getAttribute("aria-selected") === "true");
+    if (!selectedTab || selectedTab.hidden) {
+      const firstAvailableTab = availableCategoryTabs()[0];
+      if (firstAvailableTab) selectCategory(firstAvailableTab.dataset.catalogCategory);
+    }
+  }
+
+  function goToCatalogTarget(id) {
     const hash = `#${id}`;
     if (window.location.hash !== hash) window.history.pushState(null, "", hash);
 
@@ -866,7 +997,7 @@ function setupCatalogMenu() {
     if (event.key === "ArrowDown") {
       event.preventDefault();
       setOpen(true, { instant: true });
-      panel.querySelector("a")?.focus();
+      panel.querySelector('[role="tab"][aria-selected="true"]')?.focus();
     } else if (event.key === "Escape") {
       setOpen(false, { instant: true, focusTrigger: true });
     } else if (event.key === "Enter" || event.key === " ") {
@@ -874,13 +1005,31 @@ function setupCatalogMenu() {
     }
   });
 
-  panel.querySelectorAll("[data-catalog-category]").forEach((link) => {
+  categoryTabs.forEach((tab) => {
+    tab.addEventListener("click", () => selectCategory(tab.dataset.catalogCategory));
+    tab.addEventListener("keydown", (event) => {
+      if (!['ArrowDown', 'ArrowUp', 'ArrowLeft', 'ArrowRight', 'Home', 'End'].includes(event.key)) return;
+      event.preventDefault();
+      const availableTabs = availableCategoryTabs();
+      const currentIndex = availableTabs.indexOf(tab);
+      if (currentIndex < 0) return;
+      let nextIndex = currentIndex;
+      if (event.key === "ArrowDown" || event.key === "ArrowRight") nextIndex = (currentIndex + 1) % availableTabs.length;
+      if (event.key === "ArrowUp" || event.key === "ArrowLeft") nextIndex = (currentIndex - 1 + availableTabs.length) % availableTabs.length;
+      if (event.key === "Home") nextIndex = 0;
+      if (event.key === "End") nextIndex = availableTabs.length - 1;
+      const nextTab = availableTabs[nextIndex];
+      selectCategory(nextTab.dataset.catalogCategory, { focus: true });
+    });
+  });
+
+  panel.querySelectorAll("[data-catalog-target]").forEach((link) => {
     link.addEventListener("click", (event) => {
-      const id = link.dataset.catalogCategory;
+      const id = link.dataset.catalogTarget;
       if (!id) return;
       event.preventDefault();
       setOpen(false);
-      goToCategory(id);
+      goToCatalogTarget(id);
     });
   });
 
@@ -894,14 +1043,25 @@ function setupCatalogMenu() {
     }
   });
 
+  selectCategory("nuevos-sellados");
+  document.addEventListener("catalog:updated", syncAvailability);
   setOpen(false, { instant: true });
-  return () => setOpen(false, { instant: true });
+  return () => {
+    document.removeEventListener("catalog:updated", syncAvailability);
+    setOpen(false, { instant: true });
+  };
 }
 
 function setupNavigation(closeCatalogMenu) {
   const toggle = document.querySelector(".nav-toggle");
   const links = document.querySelector(".nav-links");
   if (!toggle || !links) return;
+
+  const closeNavigation = () => {
+    toggle.setAttribute("aria-expanded", "false");
+    toggle.setAttribute("aria-label", "Abrir menú");
+    links.classList.remove("is-open");
+  };
 
   toggle.addEventListener("click", () => {
     const isOpen = toggle.getAttribute("aria-expanded") === "true";
@@ -911,9 +1071,9 @@ function setupNavigation(closeCatalogMenu) {
   });
 
   links.querySelectorAll("a, button:not([data-catalog-menu-trigger])").forEach((item) => item.addEventListener("click", () => {
-    toggle.setAttribute("aria-expanded", "false");
-    toggle.setAttribute("aria-label", "Abrir menú");
-    links.classList.remove("is-open");
+    const belongsToCatalogMenu = Boolean(item.closest("[data-catalog-menu]"));
+    if (belongsToCatalogMenu && !item.matches("[data-catalog-target]")) return;
+    closeNavigation();
     closeCatalogMenu?.();
   }));
 }
