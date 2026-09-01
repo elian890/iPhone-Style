@@ -750,3 +750,24 @@ img { max-width: 100%; }
   .catalog-nav-model-list a,
   .catalog-nav-model-panel { animation: none; transition-duration: 1ms !important; }
 }
+
+/* En teléfono, la historia empieza con la elección y continúa con el equipo. */
+@media (max-width: 48rem) {
+  .hero {
+    row-gap: 0;
+    padding-block: 3.65rem 4.75rem;
+  }
+  .hero-copy { display: contents; }
+  .hero-reveal--eyebrow { order: 1; margin-bottom: .72rem; }
+  .hero-reveal--title { order: 2; }
+  .hero-reveal--description { order: 3; margin-top: 1.35rem; }
+  .hero-device,
+  .hero-device--17 {
+    order: 4;
+    min-height: min(29rem, 100vw);
+    margin-top: 1.75rem;
+  }
+  .hero-product-image { height: min(29rem, 100vw); }
+  .hero-actions { order: 5; margin-top: 1.6rem; }
+  .trust-list { order: 6; margin-top: 2.5rem; }
+}
