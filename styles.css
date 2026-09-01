@@ -434,12 +434,18 @@ img { max-width: 100%; }
 }
 @media (max-width: 48rem) {
   .product-detail-trigger { inset-bottom: 7.85rem; }
-  .modal-product { width: min(calc(100% - 1rem), 31rem); }
+  .modal-product {
+    width: min(calc(100% - 1rem), 31rem);
+    max-height: calc(100dvh - 1rem);
+    overflow-y: auto;
+    overscroll-behavior: contain;
+  }
   .modal-product .modal-surface { padding: 3.75rem 1.25rem 1.5rem; }
-  .modal-product .product-modal-layout { grid-template-columns: 1fr; min-height: 0; gap: 1.65rem; }
-  .modal-product .product-modal-visual { width: min(100%, 18rem); max-height: 44dvh; margin-inline: auto; }
+  .modal-product .product-modal-layout { grid-template-columns: 1fr; min-height: 0; gap: 1.25rem; }
+  .modal-product .product-modal-visual { width: min(100%, 18rem); max-height: 30dvh; margin-inline: auto; }
   .modal-product h2, .modal-product .modal-lead { max-width: none; }
-  .product-dialog-specs { grid-template-columns: 1fr; }
+  .product-dialog-specs { grid-template-columns: repeat(2, minmax(0, 1fr)); margin-top: 1.1rem; }
+  .product-dialog-specs div:last-child:nth-child(odd) { grid-column: 1 / -1; }
 }
 
 /* Las sucursales son accesos directos; el movimiento confirma que son clickeables. */
