@@ -1080,7 +1080,7 @@ button, a { touch-action: manipulation; }
   .statement h2 {
     max-width: 10.5ch;
     font-size: clamp(2.85rem, 12vw, 4rem);
-    letter-spacing: -.047em;
+    letter-spacing: -.04em;
     line-height: 1.015;
     text-wrap: pretty;
   }
@@ -1178,9 +1178,19 @@ button, a { touch-action: manipulation; }
   .whatsapp-float {
     right: max(1rem, env(safe-area-inset-right));
     bottom: max(1rem, env(safe-area-inset-bottom));
+    gap: .55rem;
   }
-  .whatsapp-float-label { display: none; }
-  .whatsapp-float-button { width: 3.3rem; }
+  .whatsapp-float-label {
+    display: inline-flex;
+    min-height: 2.5rem;
+    max-width: calc(100vw - 5.85rem);
+    padding: .48rem .72rem;
+    border-radius: .7rem;
+    font-size: .69rem;
+    line-height: 1.2;
+    text-wrap: pretty;
+  }
+  .whatsapp-float-button { width: 3.25rem; }
 }
 
 @media (prefers-reduced-motion: reduce) {
