@@ -1069,8 +1069,29 @@ button, a { touch-action: manipulation; }
   .hero-actions { gap: .7rem; margin-top: 1.65rem; }
   .trust-list { gap: 1rem; margin-top: 2.6rem; }
   .trust-list div { min-width: calc(50% - .5rem); }
-  .statement { gap: 1.45rem; padding-block: 6.5rem; }
-  .statement h2, .section-heading h2, .trade-in-banner h2, .final-cta h2 { font-size: clamp(2.65rem, 12vw, 4.1rem); }
+  /* En móvil esta pieza editorial se lee como una secuencia: titular y luego contexto.
+     La regla de escritorio declara dos columnas más arriba; aquí se restituye una sola. */
+  .statement {
+    grid-template-columns: minmax(0, 1fr);
+    align-items: start;
+    gap: 1.65rem;
+    padding-block: clamp(5.75rem, 19vw, 7rem);
+  }
+  .statement h2 {
+    max-width: 10.5ch;
+    font-size: clamp(2.85rem, 12vw, 4rem);
+    letter-spacing: -.047em;
+    line-height: 1.015;
+    text-wrap: pretty;
+  }
+  .statement > p:last-child {
+    max-width: 34rem;
+    margin: 0;
+    font-size: 1rem;
+    line-height: 1.65;
+    text-wrap: pretty;
+  }
+  .section-heading h2, .trade-in-banner h2, .final-cta h2 { font-size: clamp(2.65rem, 12vw, 4.1rem); }
   .catalog { padding-block: 5.5rem 6.5rem; }
   .section-heading { margin-bottom: 2.4rem; }
   .catalog-group-heading { margin-bottom: 1.65rem; }
